@@ -2,6 +2,30 @@ import axios from 'axios';
 import { MARKET_PRICES, NEWS_ITEMS } from '../utils/constants';
 import { getDiseaseInfo } from '../utils/diseaseMapping';
 
+interface CropRecord {
+  id: string;
+  name: string;
+  description: string;
+  expectedYield: number;
+  profitability: number;
+  sustainability: number;
+  mspPrice: number;
+  type: string;
+  seasons: string[];
+  soilTypes: string[];
+}
+
+interface NewsFeedItem {
+  title?: string;
+  link?: string;
+  description?: string;
+  content?: string;
+  guid?: string;
+  pubDate?: string;
+  author?: string;
+  source?: string;
+}
+
 // Create axios instance with base config
 const api = axios.create({
   baseURL: 'https://api.agrisahayak.local',
@@ -41,7 +65,7 @@ api.interceptors.response.use(
 );
 
 // Comprehensive crop repository with fair attributes
-const CROP_DATABASE: Record<string, any> = {
+const CROP_DATABASE: Record<string, CropRecord> = {
   wheat: {
     id: 'wheat',
     name: 'Wheat',
@@ -278,25 +302,25 @@ export const fetchCropRecommendations = async (_district: string, season: string
     // _district parameter kept for future hyperlocal recommendations
     // Filter crops based on season and soil type
     const recommendations = Object.values(CROP_DATABASE)
-      .filter((crop: any) => {
+      .filter((crop: CropRecord) => {
         const seasonMatch = crop.seasons.includes(season);
         const soilMatch = crop.soilTypes.includes(soilType);
         return seasonMatch && soilMatch;
       })
-      .sort((a: any, b: any) => b.profitability - a.profitability) // Sort by profitability
+      .sort((a: CropRecord, b: CropRecord) => b.profitability - a.profitability) // Sort by profitability
       .slice(0, 8); // Return top 8 recommendations
 
     // If no exact match, return top crops for the season
     if (recommendations.length === 0) {
       const seasonRecommendations = Object.values(CROP_DATABASE)
-        .filter((crop: any) => crop.seasons.includes(season))
-        .sort((a: any, b: any) => b.profitability - a.profitability)
+        .filter((crop: CropRecord) => crop.seasons.includes(season))
+        .sort((a: CropRecord, b: CropRecord) => b.profitability - a.profitability)
         .slice(0, 8);
       return { success: true, data: seasonRecommendations };
     }
 
     return { success: true, data: recommendations };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating recommendations:', error);
     // Return default recommendations as fallback
     const defaultCrops = Object.values(CROP_DATABASE).slice(0, 8);
@@ -321,18 +345,64 @@ export const fetchMarketPrices = async () => {
   }
 };
 
+const stripHtml = (value: string = '') => value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+const classifyNewsCategory = (title: string, description: string) => {
+  const text = `${title} ${description}`.toLowerCase();
+
+  if (/(weather|rain|storm|heat|drought|temperature|cyclone|monsoon|flood)/i.test(text)) {
+    return 'weather';
+  }
+
+  if (/(scheme|subsidy|government|kisan|pm|loan|support|benefit|policy)/i.test(text)) {
+    return 'scheme';
+  }
+
+  return 'market';
+};
+
 // News API
 export const fetchNews = async () => {
+  const newsFeedUrl = import.meta.env.VITE_NEWS_RSS_URL || 'https://news.google.com/rss/search?q=agriculture+india&hl=en-IN&gl=IN&ceid=IN:en';
+
   try {
+    const response = await axios.get<{ items?: NewsFeedItem[] }>('https://api.rss2json.com/v1/api.json', {
+      params: {
+        rss_url: newsFeedUrl,
+      },
+      timeout: 15000,
+    });
+
+    const items: NewsFeedItem[] = response.data?.items ?? [];
+
+    const mappedNews = items
+      .filter((item: NewsFeedItem) => item?.title && item?.link)
+      .slice(0, 12)
+      .map((item: NewsFeedItem, index: number) => {
+        const title = stripHtml(item.title);
+        const description = stripHtml(item.description || item.content || '');
+
+        return {
+          id: item.guid || item.link || `news-${index}`,
+          category: classifyNewsCategory(title, description),
+          title,
+          description: description || 'Read the full article for more details.',
+          date: item.pubDate || new Date().toISOString(),
+          source: item.author || item.source || 'Live News Feed',
+          type: index === 0 ? 'alert' : index === 1 ? 'warning' : 'info',
+          articleUrl: item.link,
+        };
+      });
+
+    return {
+      success: true,
+      data: mappedNews.length > 0 ? mappedNews : NEWS_ITEMS,
+    };
+  } catch (error) {
+    console.error('Error fetching live news:', error);
     return {
       success: true,
       data: NEWS_ITEMS,
-    };
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    return {
-      success: false,
-      error: 'Failed to fetch news',
     };
   }
 };
@@ -375,9 +445,11 @@ export const fetchWeather = async (latitude: number, longitude: number) => {
         longitude: longitude,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorDetails = error instanceof Error ? error.message : 'Unknown error';
+
     console.error('Error fetching weather:', error);
-    console.error('Error details:', error.response?.data || error.message); // Log detailed error information
+    console.error('Error details:', errorDetails); // Log detailed error information
     
     // Return success with fallback data so UI displays something
     return {
@@ -445,7 +517,7 @@ export const detectPlantDisease = async (imageBase64: string) => {
     // Use mock disease detection as fallback
     console.log('Using mock disease detection...');
     return performMockDiseaseDetection();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in disease detection:', error);
     // Fallback to mock detection on errors
     return performMockDiseaseDetection();

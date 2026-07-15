@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Settings, Trash2, Download, Info } from 'lucide-react';
 import { clearDatabase, getDBSize, getAllDiagnostics, getAllPrices } from '../services/db';
-import { saveFeedback } from '../services/feedbackstore';
+import { saveFeedback } from '../services/feedbackStore';
 import { LANGUAGES, APP_VERSION, APP_NAME } from '../utils/constants';
 
 const SettingsPage: React.FC = () => {
@@ -13,13 +13,6 @@ const SettingsPage: React.FC = () => {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSaving, setFeedbackSaving] = useState(false);
 
-  useEffect(() => {
-    updateDBSize();
-    // Update cache size every 5 seconds to show real-time changes
-    const interval = setInterval(updateDBSize, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   const updateDBSize = async () => {
     try {
       const size = await getDBSize();
@@ -28,6 +21,14 @@ const SettingsPage: React.FC = () => {
       console.error('Error updating DB size:', _error);
     }
   };
+
+    useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    updateDBSize();
+    // Update cache size every 5 seconds to show real-time changes
+    const interval = setInterval(updateDBSize, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClearCache = async () => {
     if (

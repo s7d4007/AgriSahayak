@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Newspaper, Cloud, Lightbulb, TrendingUp } from 'lucide-react';
-import { NEWS_ITEMS } from '../utils/constants';
 import { fetchNews } from '../services/api';
 
 interface NewsItem {
@@ -21,21 +20,22 @@ const NewsAlerts: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadNews();
-  }, []);
-
   const loadNews = async () => {
     setLoading(true);
     try {
       const result = await fetchNews();
       if (result.success) {
-        setNews((result.data as NewsItem[]) || NEWS_ITEMS);
+        setNews((result.data as NewsItem[]) ?? []);
       }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadNews();
+  }, []);
 
   const categories = [
     { id: 'all', label: t('news.all'), icon: Newspaper },
