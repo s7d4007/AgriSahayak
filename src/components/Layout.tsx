@@ -14,6 +14,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { path: '/prices', label: t('nav.priceInfo') },
     { path: '/price-calculator', label: t('nav.priceCalculator') },
     { path: '/disease-detector', label: t('nav.diseaseDetector') },
+    { path: '/farm-planner', label: t('nav.farmPlanner') },
     { path: '/news', label: t('nav.news') },
     { path: '/settings', label: t('nav.settings') },
   ];
@@ -180,6 +181,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <li><a href="/crop-advisory" className="hover:text-primary-400">{t('nav.cropAdvisory')}</a></li>
                 <li><a href="/prices" className="hover:text-primary-400">{t('nav.priceInfo')}</a></li>
                 <li><a href="/disease-detector" className="hover:text-primary-400">{t('nav.diseaseDetector')}</a></li>
+                <li><a href="/farm-planner" className="hover:text-primary-400">{t('nav.farmPlanner')}</a></li>
                 <li><a href="/news" className="hover:text-primary-400">{t('nav.news')}</a></li>
               </ul>
             </div>

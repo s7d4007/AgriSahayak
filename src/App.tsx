@@ -12,6 +12,7 @@ import NewsAlerts from './pages/NewsAlerts';
 import SettingsPage from './pages/Settings';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import FarmPlanner from './pages/FarmPlanner';
 import { initDB } from './services/db';
 
 const App: React.FC = () => {
@@ -48,6 +49,7 @@ const App: React.FC = () => {
             <Route path="/prices" element={<PriceDashboard />} />
             <Route path="/price-calculator" element={<PriceCalculator />} />
             <Route path="/disease-detector" element={<DiseaseDetector />} />
+            <Route path="/farm-planner" element={<FarmPlanner />} />
             <Route path="/news" element={<NewsAlerts />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

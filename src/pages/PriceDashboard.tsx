@@ -18,10 +18,6 @@ const PriceDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCommodity, setSelectedCommodity] = useState<Price | null>(null);
 
-  useEffect(() => {
-    loadPrices();
-  }, []);
-
   const loadPrices = async () => {
     setLoading(true);
     try {
@@ -33,6 +29,31 @@ const PriceDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let isActive = true;
+
+    const runLoad = async () => {
+      setLoading(true);
+      try {
+        const result = await fetchMarketPrices();
+        if (!isActive) return;
+        if (result.success) {
+          setPrices((result.data as Price[]) || MARKET_PRICES);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void runLoad();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const getPriceDifference = (mspPrice: number, marketPrice: number) => {
     return marketPrice - mspPrice;
