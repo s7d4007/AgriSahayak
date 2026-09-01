@@ -1,12 +1,81 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Menu, X } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Menu, Mic, MicOff, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
+type SpeechRecognitionResultItem = {
+  transcript?: string;
+};
+
+type SpeechRecognitionResultLike = ArrayLike<SpeechRecognitionResultItem>;
+type SpeechRecognitionEventLike = {
+  results: ArrayLike<SpeechRecognitionResultLike>;
+};
+
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onstart: ((event: Event) => void) | null;
+  onend: ((event: Event) => void) | null;
+  onerror: ((event: Event & { error?: string }) => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+};
+
+const navCommands = [
+  {
+    path: '/',
+    aliases: ['home', 'main page', 'dashboard', 'start page', 'होम', 'मुख्य पेज', 'मुख्यपेज', 'मुख्य पृष्ठ', 'मुख्यपृष्ठ'],
+  },
+  {
+    path: '/crop-advisory',
+    aliases: ['crop advisory', 'crop recommendation', 'advisory', 'फसल सलाह', 'फसल की सलाह', 'कृषि सलाह', 'सलाह', 'कृषि परामर्श'],
+  },
+  {
+    path: '/prices',
+    aliases: ['prices', 'price dashboard', 'market prices', 'mandi prices', 'कीमत', 'मंडी कीमत', 'बाजार कीमत', 'कीमत की जानकारी', 'मंडी दर'],
+  },
+  {
+    path: '/price-calculator',
+    aliases: ['price calculator', 'calculate price', 'price estimate', 'कीमत कैलकुलेटर', 'कीमत kalkulator', 'कीमत निकालें'],
+  },
+  {
+    path: '/disease-detector',
+    aliases: ['disease detector', 'plant disease', 'detect disease', 'disease check', 'रोग पहचान', 'रोग पता करें', 'पौधे का रोग', 'रोग देखें'],
+  },
+  {
+    path: '/farm-planner',
+    aliases: ['farm planner', 'crop planner', 'planning', 'कृषि योजना', 'खेती योजना', 'फार्म प्लानर', 'योजना'],
+  },
+  {
+    path: '/news',
+    aliases: ['news', 'weather news', 'agri news', 'alerts', 'समाचार', 'समाचार और सूचना', 'अलर्ट', 'मौसम समाचार', 'खबर'],
+  },
+  {
+    path: '/settings',
+    aliases: ['settings', 'preferences', 'language settings', 'सेटिंग', 'सेटिंग्स', 'पसंद', 'भाषा'],
+  },
+];
+
+const getSpeechRecognitionConstructor = () => {
+  const browserWindow = window as Window & {
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+  };
+
+  return browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition ?? null;
+};
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState('Tap the mic to use voice commands');
   const location = useLocation();
+  const navigate = useNavigate();
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const navItems = [
     { path: '/', label: t('nav.home') },
@@ -26,39 +95,196 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     localStorage.setItem('language', lng);
   };
 
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+    };
+  }, []);
+
+  const handleVoiceCommand = (rawText: string) => {
+    const normalizedText = rawText.toLowerCase().trim();
+    const resolvedCommand = navCommands.find(({ aliases }) =>
+      aliases.some((alias) => normalizedText.includes(alias))
+    );
+
+    if (resolvedCommand) {
+      navigate(resolvedCommand.path);
+      setVoiceStatus(`Opening ${resolvedCommand.path === '/' ? 'Home' : resolvedCommand.path.replace('/', '').replace('-', ' ')}`);
+      setIsListening(false);
+      return;
+    }
+
+    const activeElement = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
+    const dictationCommand = normalizedText.match(/^(write|type|enter|fill|say|set)\s+(.*)$/i);
+
+    if (dictationCommand && activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+      const value = dictationCommand[2].trim();
+      if (value) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+        const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+
+        if (nativeInputValueSetter && activeElement.tagName === 'INPUT') {
+          nativeInputValueSetter.call(activeElement, value);
+        } else if (nativeTextAreaValueSetter && activeElement.tagName === 'TEXTAREA') {
+          nativeTextAreaValueSetter.call(activeElement, value);
+        } else {
+          activeElement.value = value;
+        }
+
+        activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+        activeElement.dispatchEvent(new Event('change', { bubbles: true }));
+        activeElement.focus();
+        setVoiceStatus(`Inserted: ${value}`);
+        setIsListening(false);
+        return;
+      }
+    }
+
+    const openMatch = normalizedText.match(/\b(open|go to|navigate to|show)\s+(.*)$/i);
+    if (openMatch) {
+      const possiblePath = openMatch[2].trim();
+      const fallback = navCommands.find(({ aliases }) => aliases.some((alias) => possiblePath.includes(alias)));
+      if (fallback) {
+        navigate(fallback.path);
+        setVoiceStatus(`Opening ${fallback.path === '/' ? 'Home' : fallback.path.replace('/', '').replace('-', ' ')}`);
+        setIsListening(false);
+        return;
+      }
+    }
+
+    setVoiceStatus(`I heard: “${rawText}”. Try saying “open farm planner” or “write rice”.`);
+    setIsListening(false);
+  };
+
+  const startVoiceAssistant = () => {
+    const isSecureOrigin = window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const SpeechRecognitionConstructor = getSpeechRecognitionConstructor();
+
+    if (!isSecureOrigin) {
+      setVoiceStatus('Voice input needs a secure browser connection. Use localhost or HTTPS.');
+      return;
+    }
+
+    if (!SpeechRecognitionConstructor) {
+      setVoiceStatus('Voice recognition is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
+
+    recognitionRef.current?.stop();
+    const recognition = new SpeechRecognitionConstructor();
+    const languageOptions = i18n.language === 'hi' ? ['hi-IN', 'en-US', 'en-IN'] : ['en-US', 'en-IN', 'hi-IN'];
+
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    const applyLanguage = (lang: string) => {
+      recognition.lang = lang;
+    };
+
+    const startRecognition = (index: number) => {
+      const lang = languageOptions[index] ?? languageOptions[0];
+      applyLanguage(lang);
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setVoiceStatus('Listening... say a page name or a short sentence.');
+      };
+
+      recognition.onresult = (event: SpeechRecognitionEventLike) => {
+        const latestTranscript = Array.from(event.results as ArrayLike<SpeechRecognitionResultLike>)
+          .map((result) => (result[0] as SpeechRecognitionResultItem | undefined)?.transcript ?? '')
+          .join(' ')
+          .trim();
+
+        if (latestTranscript) {
+          setVoiceStatus(`Heard: “${latestTranscript}”`);
+          handleVoiceCommand(latestTranscript);
+        }
+      };
+
+      recognition.onerror = (event: Event & { error?: string }) => {
+        const error = event.error ?? 'unknown';
+        setIsListening(false);
+
+        if (error === 'not-allowed' || error === 'service-not-allowed') {
+          setVoiceStatus('Microphone permission was blocked. Please allow mic access and try again.');
+          return;
+        }
+
+        if (error === 'network' && index < languageOptions.length - 1) {
+          startRecognition(index + 1);
+          return;
+        }
+
+        if (error === 'network') {
+          setVoiceStatus('Voice service is unavailable right now. Please try again in a moment or use Chrome/Edge.');
+          return;
+        }
+
+        setVoiceStatus(`Voice input error: ${error}. Please try again.`);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+
+      try {
+        recognition.start();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        if (index < languageOptions.length - 1) {
+          startRecognition(index + 1);
+          return;
+        }
+
+        setVoiceStatus('Voice service is unavailable right now. Please allow microphone permission and try again.');
+      }
+    };
+
+    startRecognition(0);
+  };
+
+  const stopVoiceAssistant = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+    setVoiceStatus('Voice assistant stopped.');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-accent-900">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-md border-b-4 border-primary-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 py-3 md:py-2">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link to="/" className="flex items-center gap-2 group shrink-0">
               <div className="p-0">
                 <img
                   src="/logo.png"
                   alt="AgriSahayak"
                   className="w-10 h-10 rounded-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = '/fallback-logo.png'; // Fallback image
+                    e.currentTarget.src = '/fallback-logo.png';
                   }}
                 />
               </div>
-              <div className="hidden sm:block">
+              <div className="hidden sm:block leading-tight">
                 <h1 className="text-xl font-bold text-primary-700">AgriSahayak</h1>
                 <p className="text-xs text-secondary-600">Farm Smart, Earn More</p>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex gap-8">
+            <nav className="hidden md:flex flex-1 items-center justify-center gap-4 xl:gap-6 overflow-x-auto px-2">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`font-medium transition-colors duration-200 ${
+                  className={`shrink-0 text-sm xl:text-base font-medium transition-colors duration-200 whitespace-nowrap ${
                     isActive(item.path)
-                      ? 'text-primary-600 border-b-2 border-primary-600'
+                      ? 'text-primary-600 border-b-2 border-primary-600 pb-1'
                       : 'text-accent-600 hover:text-primary-600'
                   }`}
                 >
@@ -68,8 +294,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </nav>
 
             {/* Language and Mobile Menu */}
-            <div className="flex items-center gap-4">
-              {/* Language Selector */}
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={isListening ? stopVoiceAssistant : startVoiceAssistant}
+                className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+                  isListening ? 'bg-red-100 text-red-700 ring-2 ring-red-200' : 'bg-primary-100 text-primary-700 hover:bg-primary-200'
+                }`}
+                aria-label="Toggle voice assistant"
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                <span className="hidden sm:inline">Voice</span>
+              </button>
+
               <div className="hidden sm:flex gap-2">
                 <button
                   onClick={() => changeLanguage('en')}
@@ -93,7 +330,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </button>
               </div>
 
-              {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="md:hidden p-2 hover:bg-accent-100 rounded-lg transition-colors"
@@ -106,6 +342,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
             </div>
           </div>
+        </div>
+
+        <div className="border-t border-accent-100 bg-accent-50/80 px-4 py-2 text-center text-xs text-accent-700">
+          <span className={`inline-flex items-center gap-2 ${isListening ? 'text-red-700' : 'text-accent-700'}`}>
+            <span className={`h-2 w-2 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></span>
+            {voiceStatus}
+          </span>
         </div>
 
         {/* Mobile Navigation */}
