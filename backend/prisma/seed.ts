@@ -1,0 +1,132 @@
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log('🌱 Starting AgriSahayak database seed...');
+
+  // ─── Seasons ──────────────────────────────────────────────
+  const seasons = await Promise.all([
+    prisma.season.upsert({ where: { slug: 'kharif' }, update: {}, create: { slug: 'kharif', name: 'Kharif (Monsoon)', months: 'Jun–Nov' } }),
+    prisma.season.upsert({ where: { slug: 'rabi' }, update: {}, create: { slug: 'rabi', name: 'Rabi (Winter)', months: 'Nov–Apr' } }),
+    prisma.season.upsert({ where: { slug: 'summer' }, update: {}, create: { slug: 'summer', name: 'Summer / Zaid', months: 'Mar–Jun' } }),
+  ]);
+  const [kharif, rabi] = seasons;
+  console.log(`✅ Seasons: ${seasons.length} upserted`);
+
+  // ─── Soil Types ───────────────────────────────────────────
+  const soils = await Promise.all([
+    prisma.soilType.upsert({ where: { slug: 'loamy' }, update: {}, create: { slug: 'loamy', name: 'Loamy' } }),
+    prisma.soilType.upsert({ where: { slug: 'alluvial' }, update: {}, create: { slug: 'alluvial', name: 'Alluvial' } }),
+    prisma.soilType.upsert({ where: { slug: 'black-soil' }, update: {}, create: { slug: 'black-soil', name: 'Black Soil' } }),
+    prisma.soilType.upsert({ where: { slug: 'sandy-loam' }, update: {}, create: { slug: 'sandy-loam', name: 'Sandy Loam' } }),
+    prisma.soilType.upsert({ where: { slug: 'red-soil' }, update: {}, create: { slug: 'red-soil', name: 'Red Soil' } }),
+    prisma.soilType.upsert({ where: { slug: 'clayey' }, update: {}, create: { slug: 'clayey', name: 'Clayey' } }),
+    prisma.soilType.upsert({ where: { slug: 'laterite' }, update: {}, create: { slug: 'laterite', name: 'Laterite' } }),
+  ]);
+  const soilMap = Object.fromEntries(soils.map((s) => [s.slug, s]));
+  console.log(`✅ Soil types: ${soils.length} upserted`);
+
+  // ─── Crops ────────────────────────────────────────────────
+  type CropInput = {
+    slug: string; name: string; description: string; type: string;
+    expectedYield: number; profitability: number; sustainability: number; mspPrice: number;
+    seasonSlugs: string[]; soilSlugs: string[];
+  };
+
+  const cropData: CropInput[] = [
+    { slug: 'wheat', name: 'Wheat', description: 'Winter cereal crop with high yield potential. Best for rabi season in northern India.', type: 'grain', expectedYield: 45, profitability: 75, sustainability: 80, mspPrice: 2150, seasonSlugs: ['rabi'], soilSlugs: ['loamy', 'alluvial', 'black-soil'] },
+    { slug: 'rice', name: 'Rice', description: 'Major staple crop with good market demand. Requires adequate water supply.', type: 'grain', expectedYield: 55, profitability: 80, sustainability: 75, mspPrice: 2100, seasonSlugs: ['kharif'], soilSlugs: ['loamy', 'alluvial', 'clayey'] },
+    { slug: 'maize', name: 'Maize (Corn)', description: 'Versatile crop with multiple uses in food and industry.', type: 'grain', expectedYield: 60, profitability: 85, sustainability: 82, mspPrice: 1850, seasonSlugs: ['kharif', 'rabi'], soilSlugs: ['loamy', 'black-soil', 'sandy-loam'] },
+    { slug: 'chickpea', name: 'Chickpea (Gram)', description: 'Protein-rich pulse crop. Excellent for crop rotation and soil health.', type: 'pulse', expectedYield: 22, profitability: 78, sustainability: 88, mspPrice: 5100, seasonSlugs: ['rabi'], soilSlugs: ['black-soil', 'loamy', 'sandy-loam'] },
+    { slug: 'lentil', name: 'Lentil (Masoor)', description: 'High protein pulse with good market value. Improves soil fertility.', type: 'pulse', expectedYield: 18, profitability: 82, sustainability: 90, mspPrice: 6500, seasonSlugs: ['rabi'], soilSlugs: ['loamy', 'black-soil', 'alluvial'] },
+    { slug: 'sunflower', name: 'Sunflower', description: 'Oil seed crop with high market value. Drought tolerant.', type: 'oilseed', expectedYield: 18, profitability: 84, sustainability: 79, mspPrice: 6000, seasonSlugs: ['rabi', 'kharif'], soilSlugs: ['sandy-loam', 'loamy', 'black-soil'] },
+    { slug: 'cotton', name: 'Cotton', description: 'Cash crop with strong global market. Requires good soil and water management.', type: 'fabric', expectedYield: 18, profitability: 75, sustainability: 70, mspPrice: 5800, seasonSlugs: ['kharif'], soilSlugs: ['black-soil', 'loamy'] },
+    { slug: 'sugarcane', name: 'Sugarcane', description: 'Cash crop with stable returns. Requires adequate water and nutrients.', type: 'grain', expectedYield: 75, profitability: 72, sustainability: 68, mspPrice: 310, seasonSlugs: ['kharif'], soilSlugs: ['alluvial', 'loamy', 'black-soil'] },
+    { slug: 'kidney-bean', name: 'Kidney Bean', description: 'Premium pulse crop with strong export demand.', type: 'pulse', expectedYield: 20, profitability: 88, sustainability: 85, mspPrice: 7200, seasonSlugs: ['rabi', 'kharif'], soilSlugs: ['loamy', 'sandy-loam'] },
+    { slug: 'marigold', name: 'Marigold', description: 'Floriculture crop with good market demand. High-value crop.', type: 'flower', expectedYield: 320, profitability: 92, sustainability: 88, mspPrice: 2500, seasonSlugs: ['kharif', 'rabi'], soilSlugs: ['loamy', 'sandy-loam', 'alluvial'] },
+    { slug: 'rose', name: 'Rose', description: 'Premium floriculture cut flower with excellent market value.', type: 'flower', expectedYield: 150, profitability: 95, sustainability: 85, mspPrice: 5000, seasonSlugs: ['kharif', 'rabi'], soilSlugs: ['loamy', 'sandy-loam'] },
+    { slug: 'mango', name: 'Mango', description: 'King of fruits with excellent market value and long shelf life.', type: 'fruit', expectedYield: 35, profitability: 90, sustainability: 92, mspPrice: 8000, seasonSlugs: ['kharif', 'rabi'], soilSlugs: ['loamy', 'sandy-loam', 'black-soil'] },
+    { slug: 'banana', name: 'Banana', description: 'Perennial crop with year-round yield. High productivity.', type: 'fruit', expectedYield: 50, profitability: 88, sustainability: 87, mspPrice: 3000, seasonSlugs: ['kharif', 'rabi'], soilSlugs: ['loamy', 'alluvial', 'sandy-loam'] },
+    { slug: 'pomegranate', name: 'Pomegranate', description: 'High-value fruit with increasing demand in domestic and export markets.', type: 'fruit', expectedYield: 25, profitability: 93, sustainability: 90, mspPrice: 12000, seasonSlugs: ['kharif'], soilSlugs: ['black-soil', 'loamy', 'sandy-loam'] },
+    { slug: 'dragon-fruit', name: 'Dragon Fruit', description: 'Exotic high-value fruit with increasing market demand.', type: 'exotic', expectedYield: 15, profitability: 94, sustainability: 88, mspPrice: 20000, seasonSlugs: ['kharif', 'rabi'], soilSlugs: ['sandy-loam', 'loamy'] },
+    { slug: 'strawberry', name: 'Strawberry', description: 'High-value exotic fruit with premium export potential.', type: 'exotic', expectedYield: 20, profitability: 96, sustainability: 84, mspPrice: 15000, seasonSlugs: ['rabi'], soilSlugs: ['loamy', 'sandy-loam'] },
+    { slug: 'blueberry', name: 'Blueberry', description: 'Premium superfruit with excellent export potential.', type: 'exotic', expectedYield: 12, profitability: 97, sustainability: 89, mspPrice: 25000, seasonSlugs: ['rabi'], soilSlugs: ['sandy-loam', 'loamy'] },
+    { slug: 'mustard', name: 'Mustard', description: 'Major oilseed crop with excellent winter performance.', type: 'oilseed', expectedYield: 15, profitability: 80, sustainability: 82, mspPrice: 5650, seasonSlugs: ['rabi'], soilSlugs: ['loamy', 'sandy-loam', 'alluvial'] },
+    { slug: 'groundnut', name: 'Groundnut', description: 'High-value oil crop with strong domestic and export demand.', type: 'oilseed', expectedYield: 20, profitability: 83, sustainability: 80, mspPrice: 6377, seasonSlugs: ['kharif'], soilSlugs: ['sandy-loam', 'red-soil', 'loamy'] },
+    { slug: 'soybean', name: 'Soybean', description: 'Major protein and oil crop with good market value.', type: 'oilseed', expectedYield: 25, profitability: 78, sustainability: 82, mspPrice: 4600, seasonSlugs: ['kharif'], soilSlugs: ['black-soil', 'loamy'] },
+  ];
+
+  const seasonMap: Record<string, typeof kharif> = { kharif, rabi };
+
+  for (const cropInput of cropData) {
+    const { seasonSlugs, soilSlugs, ...cropFields } = cropInput;
+
+    const crop = await prisma.crop.upsert({
+      where: { slug: cropFields.slug },
+      update: { name: cropFields.name, description: cropFields.description, profitability: cropFields.profitability, mspPrice: cropFields.mspPrice },
+      create: cropFields,
+    });
+
+    // Upsert season links
+    for (const slug of seasonSlugs) {
+      const season = seasonMap[slug];
+      if (season) {
+        await prisma.cropSeason.upsert({
+          where: { cropId_seasonId: { cropId: crop.id, seasonId: season.id } },
+          update: {},
+          create: { cropId: crop.id, seasonId: season.id },
+        });
+      }
+    }
+
+    // Upsert soil links
+    for (const slug of soilSlugs) {
+      const soil = soilMap[slug];
+      if (soil) {
+        await prisma.cropSoil.upsert({
+          where: { cropId_soilTypeId: { cropId: crop.id, soilTypeId: soil.id } },
+          update: {},
+          create: { cropId: crop.id, soilTypeId: soil.id },
+        });
+      }
+    }
+  }
+  console.log(`✅ Crops: ${cropData.length} upserted`);
+
+  // ─── Diseases ─────────────────────────────────────────────
+  type DiseaseInput = {
+    slug: string; name: string; scientificName?: string; description: string;
+    cause: string; symptoms: string[]; treatment: string[]; prevention: string[]; severity: string;
+  };
+
+  const diseaseData: DiseaseInput[] = [
+    { slug: 'leaf-spot', name: 'Leaf Spot', scientificName: 'Various (Cercospora, Alternaria, Phyllosticta)', description: 'Fungal disease with circular brown spots on leaves causing defoliation.', cause: 'Various fungal pathogens in warm, humid conditions with leaf wetness.', symptoms: ['Brown/black circular spots on leaves', 'Yellow halo around lesions', 'Spots merging into large dead areas', 'Premature leaf drop'], treatment: ['Remove infected leaves and plant debris', 'Apply copper fungicides or mancozeb', 'Spray at 7-10 day intervals', 'Improve air circulation through pruning'], prevention: ['Maintain proper plant spacing', 'Avoid overhead watering', 'Remove fallen leaves regularly', 'Apply preventive fungicides during humid periods'], severity: 'mild' },
+    { slug: 'powdery-mildew', name: 'Powdery Mildew', scientificName: 'Various Erysiphaceae species', description: 'Fungal disease causing white powder-like coating on leaves.', cause: 'Fungal spores spread by wind. Develops in warm days with cool nights.', symptoms: ['White to gray powdery coating on leaves', 'Coating on stems and buds', 'Distorted leaf growth', 'Reduced fruit size and quality'], treatment: ['Spray sulfur-based fungicides weekly', 'Use neem oil or potassium bicarbonate', 'Apply systemic fungicides like myclobutanil', 'Remove heavily infected leaves'], prevention: ['Choose resistant varieties', 'Avoid excessive nitrogen fertilization', 'Maintain proper plant spacing', 'Water at soil level only'], severity: 'mild' },
+    { slug: 'rust-disease', name: 'Rust Disease', scientificName: 'Various Pucciniales species', description: 'Fungal disease causing rust-colored pustules on leaf undersides.', cause: 'Fungal spores spread by wind and water splash. Favored by high humidity.', symptoms: ['Rusty-orange pustules on leaf undersides', 'Yellow spots on upper leaf surface', 'Premature leaf drop', 'Reduced plant vigor'], treatment: ['Remove affected leaves promptly', 'Apply sulfur-based fungicides', 'Use myclobutanil or systemic fungicides', 'Spray every 7-14 days'], prevention: ['Plant resistant varieties', 'Maintain proper spacing for air flow', 'Avoid overhead watering', 'Remove infected plant debris'], severity: 'moderate' },
+    { slug: 'blight-disease', name: 'Blight Disease', scientificName: 'Various Phytophthora and Alternaria species', description: 'Serious fungal disease causing rapid leaf damage, stem cankers, and fruit rot.', cause: 'Fungal pathogens favored by high humidity, poor drainage, and temperature extremes.', symptoms: ['Water-soaked spots on leaves turning brown/black', 'Rapid leaf death and defoliation', 'Stem cankers and darkening', 'Fruit rot and collapse'], treatment: ['Remove infected leaves and stems immediately', 'Apply chlorothalonil or copper fungicides', 'Use systemic fungicides like metalaxyl', 'Improve drainage and air circulation', 'Destroy heavily infected plants'], prevention: ['Choose blight-resistant varieties', 'Improve soil drainage', 'Apply preventive fungicides from bloom onwards', 'Avoid overhead watering', 'Mulch to prevent soil splash'], severity: 'severe' },
+    { slug: 'mosaic-virus', name: 'Mosaic Virus', scientificName: 'Various Potyvirus and other virus genera', description: 'Viral disease causing mottled, distorted foliage and reduced yield.', cause: 'Spread by aphids and other sucking insects. Also via contact and contaminated tools.', symptoms: ['Mottled light and dark green patches on leaves', 'Leaf curling and distortion', 'Stunted plant growth', 'Reduced fruit/seed production', 'Mosaic pattern on fruits'], treatment: ['No direct chemical cure available', 'Remove and destroy infected plants', 'Control aphids with insecticidal soap or neem oil', 'Disinfect tools with 10% bleach solution', 'Manage weed hosts near plantings'], prevention: ['Use virus-free certified seeds', 'Plant resistant varieties', 'Control aphid vectors with insecticides', 'Isolate infected plants immediately', 'Remove weeds that harbor viruses'], severity: 'severe' },
+    { slug: 'anthracnose', name: 'Anthracnose', scientificName: 'Colletotrichum species', description: 'Fungal disease causing sunken lesions and fruit rot, particularly damaging in wet conditions.', cause: 'Fungal spores spread by rain splash and contaminated tools. Develops in warm, wet conditions.', symptoms: ['Sunken dark lesions on leaves and stems', 'Pink spore masses in lesion centers', 'Leaf yellowing around lesions', 'Fruit rot with concentric rings', 'Twig dieback'], treatment: ['Remove infected fruit and plant parts', 'Apply chlorothalonil or mancozeb fungicides', 'Use copper-based fungicides for prevention', 'Spray every 7-10 days during wet weather', 'Sanitize pruning tools between cuts'], prevention: ['Plant disease-resistant varieties', 'Improve air circulation through pruning', 'Avoid overhead watering', 'Remove fallen leaves and debris', 'Apply preventive fungicides before rainy season'], severity: 'moderate' },
+    { slug: 'apple-scab', name: 'Apple Scab', scientificName: 'Venturia inaequalis', description: 'Common fungal disease causing dark spots on leaves and fruit.', cause: 'Fungal spores overwinter on fallen leaves. Spread by rain splash during spring.', symptoms: ['Olive-brown velvety spots on leaves', 'Brown or black spots on fruit', 'Lesions on twigs', 'Premature leaf drop', 'Misshapen fruit'], treatment: ['Apply sulfur or copper fungicides every 7-10 days', 'Use systemic fungicides like myclobutanil', 'Spray during and after rain periods', 'Remove infected leaves and fallen debris'], prevention: ['Choose scab-resistant apple varieties', 'Rake and remove fallen leaves in fall', 'Prune trees for better air circulation', 'Avoid overhead watering'], severity: 'moderate' },
+  ];
+
+  for (const diseaseInput of diseaseData) {
+    await prisma.disease.upsert({
+      where: { slug: diseaseInput.slug },
+      update: { name: diseaseInput.name, description: diseaseInput.description },
+      create: diseaseInput,
+    });
+  }
+  console.log(`✅ Diseases: ${diseaseData.length} upserted`);
+
+  console.log('\n🎉 Seed complete! AgriSahayak database is ready.\n');
+}
+
+main()
+  .catch((e) => {
+    console.error('❌ Seed error:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

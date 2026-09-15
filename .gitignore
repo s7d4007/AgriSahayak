@@ -1,165 +1,32 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Dependencies
-node_modules
-dist
-dist-ssr
-*.local
-
-# Build and Distribution
-build/
+# Root – AgriSahayak monorepo
+node_modules/
 dist/
-out/
-*.tsbuildinfo
-coverage/
-.next/
-
-# Environment variables
+build/
 .env
 .env.local
-.env.*.local
-.env.production.local
-.env.development.local
-.env.test.local
+.env.production
 
-# IDE and Editor
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-*.sublime-project
-*.sublime-workspace
-.eslintcache
-.stylelintcache
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.production
 
-# OS specific
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+
+# Prisma
+backend/prisma/migrations/ # commit individual migration files, not this line
+
+# OS files
 .DS_Store
 Thumbs.db
-.AppleDouble
-.LSOverride
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Desktop.ini
+*.log
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Testing
-coverage
-.nyc_output
-.mocha-timeout
-junit.xml
-test-results/
-
-# Package manager locks (optional - uncomment if you want to exclude)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*~
-.tmp
-tmp/
-
-# Cache
-.cache
-.eslintcache
-.next/cache
-.turbo
-
-# Misc
-.turbo
-dist/
-build/
-*.pem
-.pem
-
-# Local development
-.vscode-test
-.vscode
-launch.json
-settings.json
-
-# Node related
-npm-shrinkwrap.json
-*.tgz
-.npmrc
-
-# Yarn
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-
-# PNPM
-pnpm-lock.yaml
-
-# Debugging
-debug.log
-debug.js
-
-# IDE specific
+# IDE
 .vscode/
 .idea/
-*.iml
-out/
-*.swp
-*.swo
-*~
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-*.sublime-project
-*.sublime-workspace
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Linux
-.directory
-
-# Project specific
-.env.local
-.firebase/
-dist/
-build/
-coverage/
-.turbo/
-
-# Service Worker and PWA
-public/service-worker.js.map
-public/service-worker.js.cache
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
-*.backup
-*.bak
-.backup/
+*.suo
+*.user
