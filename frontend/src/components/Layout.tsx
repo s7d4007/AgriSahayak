@@ -170,80 +170,69 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       return;
     }
 
-    recognitionRef.current?.stop();
-    const recognition = new SpeechRecognitionConstructor();
-    const languageOptions = i18n.language === 'hi' ? ['hi-IN', 'en-US', 'en-IN'] : ['en-US', 'en-IN', 'hi-IN'];
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch(e) { /* ignore */ }
+    }
 
+    const recognition = new SpeechRecognitionConstructor();
+    
+    // Choose primary language based on user's current setting
+    const lang = i18n.language === 'hi' ? 'hi-IN' : 'en-IN';
+    recognition.lang = lang;
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    const applyLanguage = (lang: string) => {
-      recognition.lang = lang;
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceStatus('Listening... say a page name or a short sentence.');
     };
 
-    const startRecognition = (index: number) => {
-      const lang = languageOptions[index] ?? languageOptions[0];
-      applyLanguage(lang);
+    recognition.onresult = (event: SpeechRecognitionEventLike) => {
+      const latestTranscript = Array.from(event.results as ArrayLike<SpeechRecognitionResultLike>)
+        .map((result) => (result[0] as SpeechRecognitionResultItem | undefined)?.transcript ?? '')
+        .join(' ')
+        .trim();
 
-      recognition.onstart = () => {
-        setIsListening(true);
-        setVoiceStatus('Listening... say a page name or a short sentence.');
-      };
-
-      recognition.onresult = (event: SpeechRecognitionEventLike) => {
-        const latestTranscript = Array.from(event.results as ArrayLike<SpeechRecognitionResultLike>)
-          .map((result) => (result[0] as SpeechRecognitionResultItem | undefined)?.transcript ?? '')
-          .join(' ')
-          .trim();
-
-        if (latestTranscript) {
-          setVoiceStatus(`Heard: “${latestTranscript}”`);
-          handleVoiceCommand(latestTranscript);
-        }
-      };
-
-      recognition.onerror = (event: Event & { error?: string }) => {
-        const error = event.error ?? 'unknown';
-        setIsListening(false);
-
-        if (error === 'not-allowed' || error === 'service-not-allowed') {
-          setVoiceStatus('Microphone permission was blocked. Please allow mic access and try again.');
-          return;
-        }
-
-        if (error === 'network' && index < languageOptions.length - 1) {
-          startRecognition(index + 1);
-          return;
-        }
-
-        if (error === 'network') {
-          setVoiceStatus('Voice service is unavailable right now. Please try again in a moment or use Chrome/Edge.');
-          return;
-        }
-
-        setVoiceStatus(`Voice input error: ${error}. Please try again.`);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-
-      try {
-        recognition.start();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        if (index < languageOptions.length - 1) {
-          startRecognition(index + 1);
-          return;
-        }
-
-        setVoiceStatus('Voice service is unavailable right now. Please allow microphone permission and try again.');
+      if (latestTranscript) {
+        setVoiceStatus(`Heard: “${latestTranscript}”`);
+        handleVoiceCommand(latestTranscript);
       }
     };
 
-    startRecognition(0);
+    recognition.onerror = (event: Event & { error?: string }) => {
+      const error = event.error ?? 'unknown';
+      setIsListening(false);
+
+      if (error === 'not-allowed' || error === 'service-not-allowed') {
+        setVoiceStatus('Microphone permission blocked. Please allow mic access and try again.');
+        return;
+      }
+      
+      if (error === 'no-speech') {
+        setVoiceStatus('No speech detected. Tap mic to try again.');
+        return;
+      }
+
+      if (error === 'network') {
+        setVoiceStatus('Voice service unavailable (Offline/Network error). Try Chrome/Edge.');
+        return;
+      }
+
+      setVoiceStatus(`Voice input error: ${error}. Please try again.`);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    try {
+      recognition.start();
+    } catch (error) {
+      setIsListening(false);
+      setVoiceStatus('Could not start voice service. Please refresh and try again.');
+    }
   };
 
   const stopVoiceAssistant = () => {
