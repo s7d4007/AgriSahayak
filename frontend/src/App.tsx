@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './services/i18n';
 import Layout from './components/Layout';
+import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import CropAdvisory from './pages/CropAdvisory';
 import PriceDashboard from './pages/PriceDashboard';
@@ -14,6 +15,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import FarmPlanner from './pages/FarmPlanner';
 import { initDB } from './services/db';
+
+const AppLayout = () => (
+  <Layout>
+    <Outlet />
+  </Layout>
+);
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -42,20 +49,22 @@ const App: React.FC = () => {
   return (
     <I18nextProvider i18n={i18n}>
       <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/crop-advisory" element={<CropAdvisory />} />
-            <Route path="/prices" element={<PriceDashboard />} />
-            <Route path="/price-calculator" element={<PriceCalculator />} />
-            <Route path="/disease-detector" element={<DiseaseDetector />} />
-            <Route path="/farm-planner" element={<FarmPlanner />} />
-            <Route path="/news" element={<NewsAlerts />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-          </Routes>
-        </Layout>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          
+          <Route path="/app" element={<AppLayout />}>
+            <Route index element={<Home />} />
+            <Route path="crop-advisory" element={<CropAdvisory />} />
+            <Route path="prices" element={<PriceDashboard />} />
+            <Route path="price-calculator" element={<PriceCalculator />} />
+            <Route path="disease-detector" element={<DiseaseDetector />} />
+            <Route path="farm-planner" element={<FarmPlanner />} />
+            <Route path="news" element={<NewsAlerts />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="privacy" element={<PrivacyPolicy />} />
+            <Route path="terms" element={<TermsOfService />} />
+          </Route>
+        </Routes>
       </Router>
     </I18nextProvider>
   );

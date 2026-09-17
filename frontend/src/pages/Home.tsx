@@ -67,37 +67,37 @@ const Home: React.FC = () => {
       icon: Sprout,
       title: t('home.feature1Title'),
       description: t('home.feature1Desc'),
-      path: '/crop-advisory',
+      path: '/app/crop-advisory',
     },
     {
       icon: TrendingUp,
       title: t('home.feature2Title'),
       description: t('home.feature2Desc'),
-      path: '/prices',
+      path: '/app/prices',
     },
     {
       icon: Camera,
       title: t('home.feature3Title'),
       description: t('home.feature3Desc'),
-      path: '/disease-detector',
+      path: '/app/disease-detector',
     },
     {
       icon: Globe,
       title: t('home.feature4Title'),
       description: t('home.feature4Desc'),
-      path: '/settings',
+      path: '/app/settings',
     },
     {
       icon: Newspaper,
       title: t('home.feature5Title'),
       description: t('home.feature5Desc'),
-      path: '/news',
+      path: '/app/news',
     },
     {
       icon: WifiOff,
       title: t('home.feature6Title'),
       description: t('home.feature6Desc'),
-      path: '/',
+      path: '/app',
     },
   ];
 
@@ -126,14 +126,14 @@ const Home: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={() => navigate('/crop-advisory')}
+                  onClick={() => navigate('/app/crop-advisory')}
                   className="btn-primary flex items-center justify-center gap-2"
                 >
                   {t('home.getStarted')}
                   <ArrowRight className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/app')}
                   className="btn-outline flex items-center justify-center gap-2"
                 >
                   {t('home.learnMore')}
@@ -329,13 +329,13 @@ const Home: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => navigate('/crop-advisory')}
+              onClick={() => navigate('/app/crop-advisory')}
               className="btn-primary"
             >
               {t('home.ctaGetStarted')}
             </button>
             <button
-              onClick={() => navigate('/settings')}
+              onClick={() => navigate('/app/settings')}
               className="btn-secondary"
             >
               {t('home.ctaCustomizeLanguage')}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset 
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!-- When hosting live, replace localhost:5173 with your real domain -->
+    <url>
+        <loc>http://localhost:5173/</loc>
+        <priority>1.0</priority>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>http://localhost:5173/app</loc>
+        <priority>0.9</priority>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>http://localhost:5173/app/crop-advisory</loc>
+        <priority>0.8</priority>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>http://localhost:5173/app/prices</loc>
+        <priority>0.8</priority>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>http://localhost:5173/app/disease-detector</loc>
+        <priority>0.8</priority>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>http://localhost:5173/app/farm-planner</loc>
+        <priority>0.7</priority>
+        <changefreq>weekly</changefreq>
+    </url>
+    <url>
+        <loc>http://localhost:5173/app/news</loc>
+        <priority>0.7</priority>
+        <changefreq>daily</changefreq>
+    </url>
+</urlset>

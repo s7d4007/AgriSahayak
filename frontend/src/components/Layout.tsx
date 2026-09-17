@@ -26,35 +26,35 @@ type SpeechRecognitionLike = {
 
 const navCommands = [
   {
-    path: '/',
+    path: '/app',
     aliases: ['home', 'main page', 'dashboard', 'start page', 'होम', 'मुख्य पेज', 'मुख्यपेज', 'मुख्य पृष्ठ', 'मुख्यपृष्ठ'],
   },
   {
-    path: '/crop-advisory',
+    path: '/app/crop-advisory',
     aliases: ['crop advisory', 'crop recommendation', 'advisory', 'फसल सलाह', 'फसल की सलाह', 'कृषि सलाह', 'सलाह', 'कृषि परामर्श'],
   },
   {
-    path: '/prices',
+    path: '/app/prices',
     aliases: ['prices', 'price dashboard', 'market prices', 'mandi prices', 'कीमत', 'मंडी कीमत', 'बाजार कीमत', 'कीमत की जानकारी', 'मंडी दर'],
   },
   {
-    path: '/price-calculator',
+    path: '/app/price-calculator',
     aliases: ['price calculator', 'calculate price', 'price estimate', 'कीमत कैलकुलेटर', 'कीमत kalkulator', 'कीमत निकालें'],
   },
   {
-    path: '/disease-detector',
+    path: '/app/disease-detector',
     aliases: ['disease detector', 'plant disease', 'detect disease', 'disease check', 'रोग पहचान', 'रोग पता करें', 'पौधे का रोग', 'रोग देखें'],
   },
   {
-    path: '/farm-planner',
+    path: '/app/farm-planner',
     aliases: ['farm planner', 'crop planner', 'planning', 'कृषि योजना', 'खेती योजना', 'फार्म प्लानर', 'योजना'],
   },
   {
-    path: '/news',
+    path: '/app/news',
     aliases: ['news', 'weather news', 'agri news', 'alerts', 'समाचार', 'समाचार और सूचना', 'अलर्ट', 'मौसम समाचार', 'खबर'],
   },
   {
-    path: '/settings',
+    path: '/app/settings',
     aliases: ['settings', 'preferences', 'language settings', 'सेटिंग', 'सेटिंग्स', 'पसंद', 'भाषा'],
   },
 ];
@@ -78,14 +78,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const navItems = [
-    { path: '/', label: t('nav.home') },
-    { path: '/crop-advisory', label: t('nav.cropAdvisory') },
-    { path: '/prices', label: t('nav.priceInfo') },
-    { path: '/price-calculator', label: t('nav.priceCalculator') },
-    { path: '/disease-detector', label: t('nav.diseaseDetector') },
-    { path: '/farm-planner', label: t('nav.farmPlanner') },
-    { path: '/news', label: t('nav.news') },
-    { path: '/settings', label: t('nav.settings') },
+    { path: '/app', label: t('nav.home') },
+    { path: '/app/crop-advisory', label: t('nav.cropAdvisory') },
+    { path: '/app/prices', label: t('nav.priceInfo') },
+    { path: '/app/price-calculator', label: t('nav.priceCalculator') },
+    { path: '/app/disease-detector', label: t('nav.diseaseDetector') },
+    { path: '/app/farm-planner', label: t('nav.farmPlanner') },
+    { path: '/app/news', label: t('nav.news') },
+    { path: '/app/settings', label: t('nav.settings') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -248,7 +248,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6">
           <div className="flex flex-wrap items-center justify-between gap-3 py-3 md:py-2">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <Link to="/app" className="flex items-center gap-2 group shrink-0">
               <div className="p-0">
                 <img
                   src="/logo.png"
