@@ -171,7 +171,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
 
     if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch(e) { /* ignore */ }
+      try { recognitionRef.current.stop(); } catch { /* ignore */ }
     }
 
     const recognition = new SpeechRecognitionConstructor();
@@ -229,7 +229,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     try {
       recognition.start();
-    } catch (error) {
+    } catch {
       setIsListening(false);
       setVoiceStatus('Could not start voice service. Please refresh and try again.');
     }
