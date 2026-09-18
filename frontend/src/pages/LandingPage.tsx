@@ -71,7 +71,7 @@ const LandingPage: React.FC = () => {
 
         <div className="flex-1 w-full max-w-lg lg:max-w-none relative z-10 perspective-1000">
           {/* A stylistic abstract farm/phone illustration placeholder using Tailwind */}
-          <div className="w-full aspect-square relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-900/5 transform lg:rotate-y-[-10deg] transition-transform duration-700 hover:rotate-y-0">
+          <div className="w-full aspect-square relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-900/5 transform lg:rotate-y-minus-10 transition-transform duration-700 hover:rotate-y-0-hover">
             <div className="absolute inset-0 bg-gradient-to-br from-primary-500 via-emerald-400 to-teal-500 opacity-90 mix-blend-overlay"></div>
             <img 
               src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop" 
