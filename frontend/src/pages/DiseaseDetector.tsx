@@ -252,7 +252,17 @@ const DiseaseDetector: React.FC = () => {
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold">Error</p>
+              <p className="font-semibold">Image Error</p>
+              <p className="text-sm">{imageValidationError}</p>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">Detection Error</p>
               <p className="text-sm">{error}</p>
             </div>
           </div>
