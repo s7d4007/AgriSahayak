@@ -295,7 +295,7 @@ const getInitialPlannerState = () => {
 };
 
 const FarmPlanner: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const initialState = useMemo(() => getInitialPlannerState(), []);
   const [areaValue, setAreaValue] = useState(initialState.areaValue);
   const [landUnit, setLandUnit] = useState<UnitKey>(initialState.landUnit);
@@ -457,7 +457,7 @@ const FarmPlanner: React.FC = () => {
     const html = `
       <html>
         <head>
-          <title>AgriSahayak - Farm Planner Report</title>
+          <title>AgriSahayak - ${t('farmPlanner.report.title')}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 24px; color: #1f2937; }
             h1, h2 { color: #166534; }
@@ -467,11 +467,11 @@ const FarmPlanner: React.FC = () => {
           </style>
         </head>
         <body>
-          <h1>AgriSahayak Farm Planner Report</h1>
+          <h1>AgriSahayak ${t('farmPlanner.report.title')}</h1>
           <p><strong>${t('farmPlanner.report.farmer')}</strong> ${cropVariety || t('farmPlanner.report.notProvided')}</p>
           <p><strong>${t('farmPlanner.report.crop')}</strong> ${selectedCropName}</p>
           <p><strong>${t('farmPlanner.report.area')}</strong> ${formatNumber(areaValue)} ${t(`farmPlanner.units.${landUnit}`)}</p>
-          <p><strong>${t('farmPlanner.report.location')}</strong> ${district}, ${state}</p>
+          <p><strong>${t('farmPlanner.report.location')}</strong> ${t(`farmPlanner.districts.${district}`)}, ${t(`farmPlanner.states.${state}`)}</p>
           <div class="card">
             <h2>${t('farmPlanner.report.summary')}</h2>
             <p>${t('farmPlanner.report.totalCost')}: ${formatCurrency(totalCultivationCost)}</p>
@@ -590,7 +590,7 @@ const FarmPlanner: React.FC = () => {
                 <span className="text-sm font-medium text-accent-700">{t('farmPlanner.state')}</span>
                 <select value={state} onChange={(event) => setState(event.target.value)} className="input-field">
                   {getAllStates().map((stateName) => (
-                    <option key={stateName} value={stateName}>{i18n.language === 'hi' ? stateName : stateName}</option>
+                    <option key={stateName} value={stateName}>{t(`farmPlanner.states.${stateName}`)}</option>
                   ))}
                 </select>
               </label>
@@ -599,7 +599,7 @@ const FarmPlanner: React.FC = () => {
                 <span className="text-sm font-medium text-accent-700">{t('farmPlanner.district')}</span>
                 <select value={district} onChange={(event) => setDistrict(event.target.value)} className="input-field">
                   {districts.map((districtName) => (
-                    <option key={districtName} value={districtName}>{districtName}</option>
+                    <option key={districtName} value={districtName}>{t(`farmPlanner.districts.${districtName}`)}</option>
                   ))}
                 </select>
               </label>
@@ -659,7 +659,7 @@ const FarmPlanner: React.FC = () => {
                 </div>
                 <div className="rounded-xl border border-accent-200 bg-white p-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-accent-500">{t('farmPlanner.profile.location')}</p>
-                  <p className="mt-1 font-semibold text-accent-900">{district}, {state}</p>
+                  <p className="mt-1 font-semibold text-accent-900">{t(`farmPlanner.districts.${district}`)}, {t(`farmPlanner.states.${state}`)}</p>
                 </div>
                 <div className="rounded-xl border border-accent-200 bg-white p-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-accent-500">{t('farmPlanner.profile.crop')}</p>

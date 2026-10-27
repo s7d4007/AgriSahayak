@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calculator, AlertCircle, Check } from 'lucide-react';
 import { CROPS, SEASONS } from '../utils/constants';
 
@@ -24,6 +25,7 @@ interface CalculationResult {
 }
 
 const PriceCalculator: React.FC = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     crop: 'rice',
     area: 1,
@@ -164,10 +166,10 @@ const PriceCalculator: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 mb-4">
             <Calculator className="w-8 h-8" />
-            <h1 className="text-4xl font-bold">Price Calculator</h1>
+            <h1 className="text-4xl font-bold">{t('calculator.title')}</h1>
           </div>
           <p className="text-primary-100">
-            Calculate your expected returns based on crop type, area, investment, market conditions, and more.
+            {t('calculator.description')}
           </p>
         </div>
       </section>
@@ -179,14 +181,14 @@ const PriceCalculator: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="card sticky top-24">
               <h2 className="text-xl font-bold text-accent-900 mb-6">
-                Calculator Inputs
+                {t('calculator.inputs')}
               </h2>
 
               <div className="space-y-5">
                 {/* Crop Selection */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Select Crop
+                    {t('calculator.selectCrop')}
                   </label>
                   <select
                     value={formData.crop}
@@ -195,7 +197,7 @@ const PriceCalculator: React.FC = () => {
                   >
                     {cropList.map(crop => (
                       <option key={crop.id} value={crop.id}>
-                        {crop.name}
+                        {t(`calculator.crops.${crop.id}`, { defaultValue: crop.name })}
                       </option>
                     ))}
                   </select>
@@ -204,7 +206,7 @@ const PriceCalculator: React.FC = () => {
                 {/* Area */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Area (Acres)
+                    {t('calculator.area')}
                   </label>
                   <input
                     type="number"
@@ -219,7 +221,7 @@ const PriceCalculator: React.FC = () => {
                 {/* Investment Per Acre */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Investment Per Acre (₹)
+                    {t('calculator.investmentPerAcre')}
                   </label>
                   <input
                     type="number"
@@ -234,7 +236,7 @@ const PriceCalculator: React.FC = () => {
                 {/* Labor Cost */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Labor Cost Per Acre (₹)
+                    {t('calculator.laborCost')}
                   </label>
                   <input
                     type="number"
@@ -249,7 +251,7 @@ const PriceCalculator: React.FC = () => {
                 {/* Season */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Season
+                    {t('calculator.season')}
                   </label>
                   <select
                     value={formData.season}
@@ -258,7 +260,7 @@ const PriceCalculator: React.FC = () => {
                   >
                     {seasonList.map(season => (
                       <option key={season.id} value={season.id}>
-                        {season.name}
+                        {t(`calculator.seasons.${season.id}`, { defaultValue: season.name })}
                       </option>
                     ))}
                   </select>
@@ -267,7 +269,7 @@ const PriceCalculator: React.FC = () => {
                 {/* Market Price */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Expected Market Price (₹/Quintal)
+                    {t('calculator.marketPrice')}
                   </label>
                   <input
                     type="number"
@@ -282,35 +284,35 @@ const PriceCalculator: React.FC = () => {
                 {/* Weather Condition */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Weather Condition
+                    {t('calculator.weatherCondition')}
                   </label>
                   <select
                     value={formData.weatherCondition}
                     onChange={(e) => handleInputChange('weatherCondition', e.target.value)}
                     className="w-full px-3 py-2 border border-accent-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
-                    <option value="excellent">Excellent</option>
-                    <option value="good">Good</option>
-                    <option value="normal">Normal</option>
-                    <option value="poor">Poor</option>
-                    <option value="drought">Drought</option>
+                    <option value="excellent">{t('calculator.conditions.excellent')}</option>
+                    <option value="good">{t('calculator.conditions.good')}</option>
+                    <option value="normal">{t('calculator.conditions.normal')}</option>
+                    <option value="poor">{t('calculator.conditions.poor')}</option>
+                    <option value="drought">{t('calculator.conditions.drought')}</option>
                   </select>
                 </div>
 
                 {/* Soil Fertility */}
                 <div>
                   <label className="block text-sm font-semibold text-accent-700 mb-2">
-                    Soil Fertility
+                    {t('calculator.soilFertility')}
                   </label>
                   <select
                     value={formData.soilFertility}
                     onChange={(e) => handleInputChange('soilFertility', e.target.value)}
                     className="w-full px-3 py-2 border border-accent-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
-                    <option value="excellent">Excellent</option>
-                    <option value="good">Good</option>
-                    <option value="average">Average</option>
-                    <option value="poor">Poor</option>
+                    <option value="excellent">{t('calculator.conditions.excellent')}</option>
+                    <option value="good">{t('calculator.conditions.good')}</option>
+                    <option value="average">{t('calculator.conditions.average')}</option>
+                    <option value="poor">{t('calculator.conditions.poor')}</option>
                   </select>
                 </div>
 
@@ -324,7 +326,7 @@ const PriceCalculator: React.FC = () => {
                     className="w-4 h-4 rounded border-accent-300 text-primary-600 focus:ring-2 focus:ring-primary-500"
                   />
                   <label htmlFor="irrigation" className="ml-3 text-sm font-medium text-accent-700">
-                    Irrigation Available
+                    {t('calculator.irrigationAvailable')}
                   </label>
                 </div>
 
@@ -338,7 +340,7 @@ const PriceCalculator: React.FC = () => {
                     className="w-4 h-4 rounded border-accent-300 text-primary-600 focus:ring-2 focus:ring-primary-500"
                   />
                   <label htmlFor="pesticides" className="ml-3 text-sm font-medium text-accent-700">
-                    Using Pesticides/Fertilizers
+                    {t('calculator.usingInputs')}
                   </label>
                 </div>
 
@@ -347,7 +349,7 @@ const PriceCalculator: React.FC = () => {
                   onClick={calculatePrice}
                   className="btn-primary w-full mt-6"
                 >
-                  Calculate Returns
+                  {t('calculator.calculate')}
                 </button>
               </div>
             </div>
@@ -361,7 +363,7 @@ const PriceCalculator: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Total Investment */}
                   <div className="card">
-                    <p className="text-sm text-accent-600 mb-1">Total Investment</p>
+                    <p className="text-sm text-accent-600 mb-1">{t('calculator.totalInvestment')}</p>
                     <p className="text-2xl font-bold text-accent-900">
                       ₹{result.totalInvestment.toLocaleString()}
                     </p>
@@ -369,53 +371,53 @@ const PriceCalculator: React.FC = () => {
 
                   {/* Estimated Yield */}
                   <div className="card">
-                    <p className="text-sm text-accent-600 mb-1">Estimated Yield</p>
+                    <p className="text-sm text-accent-600 mb-1">{t('calculator.estimatedYield')}</p>
                     <p className="text-2xl font-bold text-accent-900">
-                      {result.estimatedYield.toLocaleString()} Quintals
+                      {result.estimatedYield.toLocaleString()} {t('calculator.quintals')}
                     </p>
                   </div>
 
                   {/* MSP Revenue */}
                   <div className="card">
-                    <p className="text-sm text-accent-600 mb-1">MSP Revenue</p>
+                    <p className="text-sm text-accent-600 mb-1">{t('calculator.mspRevenue')}</p>
                     <p className="text-2xl font-bold text-accent-900">
                       ₹{result.mspRevenue.toLocaleString()}
                     </p>
                     <p className="text-xs text-accent-500 mt-1">
-                      @ ₹{result.mspPrice}/Quintal
+                      @ ₹{result.mspPrice}/{t('calculator.quintal')}
                     </p>
                   </div>
 
                   {/* Market Revenue */}
                   <div className="card">
-                    <p className="text-sm text-accent-600 mb-1">Market Revenue</p>
+                    <p className="text-sm text-accent-600 mb-1">{t('calculator.marketRevenue')}</p>
                     <p className="text-2xl font-bold text-accent-900">
                       ₹{result.marketRevenue.toLocaleString()}
                     </p>
                     <p className="text-xs text-accent-500 mt-1">
-                      @ ₹{result.marketPrice}/Quintal
+                      @ ₹{result.marketPrice}/{t('calculator.quintal')}
                     </p>
                   </div>
                 </div>
 
                 {/* Profit Analysis */}
                 <div className="card bg-gradient-to-br from-green-50 to-emerald-50">
-                  <h3 className="text-lg font-bold text-accent-900 mb-4">Profit Analysis</h3>
+                  <h3 className="text-lg font-bold text-accent-900 mb-4">{t('calculator.profitAnalysis')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-sm text-accent-600 mb-1">MSP Profit</p>
+                      <p className="text-sm text-accent-600 mb-1">{t('calculator.mspProfit')}</p>
                       <p className={`text-2xl font-bold ${result.mspProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ₹{result.mspProfit.toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-accent-600 mb-1">Market Profit</p>
+                      <p className="text-sm text-accent-600 mb-1">{t('calculator.marketProfit')}</p>
                       <p className={`text-2xl font-bold ${result.marketProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ₹{result.marketProfit.toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-accent-600 mb-1">Profit Margin</p>
+                      <p className="text-sm text-accent-600 mb-1">{t('calculator.profitMargin')}</p>
                       <p className="text-2xl font-bold text-primary-600">
                         {result.profitMargin}%
                       </p>
@@ -425,24 +427,24 @@ const PriceCalculator: React.FC = () => {
 
                 {/* Break-Even Analysis */}
                 <div className="card">
-                  <h3 className="text-lg font-bold text-accent-900 mb-4">Break-Even Analysis</h3>
+                  <h3 className="text-lg font-bold text-accent-900 mb-4">{t('calculator.breakEvenAnalysis')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <p className="text-sm text-accent-600 mb-2">Break-Even Price</p>
+                      <p className="text-sm text-accent-600 mb-2">{t('calculator.breakEvenPrice')}</p>
                       <p className="text-2xl font-bold text-accent-900">
-                        ₹{result.breakEvenPrice.toLocaleString('en-IN', { maximumFractionDigits: 2 })}/Quintal
+                        ₹{result.breakEvenPrice.toLocaleString('en-IN', { maximumFractionDigits: 2 })}/{t('calculator.quintal')}
                       </p>
                       <p className="text-xs text-accent-500 mt-2">
-                        Minimum price needed to recover all costs
+                        {t('calculator.minimumPrice')}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-accent-600 mb-2">Break-Even Yield</p>
+                      <p className="text-sm text-accent-600 mb-2">{t('calculator.breakEvenYield')}</p>
                       <p className="text-2xl font-bold text-accent-900">
-                        {result.breakEvenYield.toLocaleString('en-IN', { maximumFractionDigits: 2 })} Quintals
+                        {result.breakEvenYield.toLocaleString('en-IN', { maximumFractionDigits: 2 })} {t('calculator.quintals')}
                       </p>
                       <p className="text-xs text-accent-500 mt-2">
-                        Minimum yield at current market price
+                        {t('calculator.minimumYield')}
                       </p>
                     </div>
                   </div>
@@ -450,10 +452,10 @@ const PriceCalculator: React.FC = () => {
 
                 {/* Impact Factors */}
                 <div className="card">
-                  <h3 className="text-lg font-bold text-accent-900 mb-4">Impact Factors</h3>
+                  <h3 className="text-lg font-bold text-accent-900 mb-4">{t('calculator.impactFactors')}</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-accent-700">Weather Impact</span>
+                      <span className="text-accent-700">{t('calculator.weatherImpact')}</span>
                       <span className={`font-semibold ${result.weatherImpact >= 100 ? 'text-green-600' : 'text-orange-600'}`}>
                         {result.weatherImpact}%
                       </span>
@@ -481,11 +483,11 @@ const PriceCalculator: React.FC = () => {
                     }`} />
                     <div>
                       <h3 className="text-lg font-bold text-accent-900 mb-2">
-                        Risk Assessment: <span className={
+                        {t('calculator.riskAssessment')}: <span className={
                           result.riskAssessment === 'Low' ? 'text-green-600' :
                           result.riskAssessment === 'Medium' ? 'text-yellow-600' :
                           'text-red-600'
-                        }>{result.riskAssessment}</span>
+                        }>{t(`calculator.risk.${result.riskAssessment.toLowerCase()}`)}</span>
                       </h3>
                       <p className="text-accent-700">{result.recommendation}</p>
                     </div>
@@ -496,7 +498,7 @@ const PriceCalculator: React.FC = () => {
                 <div className="card bg-blue-50">
                   <h3 className="text-lg font-bold text-accent-900 mb-4 flex items-center gap-2">
                     <Check className="w-5 h-5 text-blue-600" />
-                    Money-Making Tips
+                    {t('calculator.tips')}
                   </h3>
                   <ul className="space-y-2 text-sm text-accent-700">
                     <li>• Monitor market prices weekly to sell at the best rate</li>
@@ -512,7 +514,7 @@ const PriceCalculator: React.FC = () => {
               <div className="card text-center py-12">
                 <Calculator className="w-16 h-16 text-accent-300 mx-auto mb-4" />
                 <p className="text-accent-600 text-lg">
-                  Fill in the inputs and click "Calculate Returns" to see your profit projections
+                  {t('calculator.emptyState')}
                 </p>
               </div>
             )}
