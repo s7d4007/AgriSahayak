@@ -30,5 +30,11 @@ export const getMarketPrices = (commodity?: string, market?: string) => {
     prices = prices.filter((p) => p.market.toLowerCase().includes(q));
   }
 
-  return { success: true, data: prices, count: prices.length };
+  return {
+    success: true,
+    live: false,
+    source: 'reference',
+    data: prices,
+    count: prices.length,
+  };
 };

@@ -148,7 +148,8 @@
     "priceIncreasing": "Price Increasing",
     "priceDecreasing": "Price Decreasing",
     "priceStable": "Price Stable",
-    "recentlyUpdated": "Recently updated"
+    "recentlyUpdated": "Recently updated",
+    "referenceDataNotice": "These are reference prices, not a live market feed."
   },
   "disease": {
     "title": "Disease Detector",

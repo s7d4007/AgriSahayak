@@ -15,6 +15,7 @@ interface Price {
 const PriceDashboard: React.FC = () => {
   const { t } = useTranslation();
   const [prices, setPrices] = useState<Price[]>([]);
+  const [pricesAreReference, setPricesAreReference] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCommodity, setSelectedCommodity] = useState<Price | null>(null);
 
@@ -23,6 +24,7 @@ const PriceDashboard: React.FC = () => {
     try {
       const result = await fetchMarketPrices();
       const fetchedPrices = Array.isArray(result.data) ? (result.data as Price[]) : [];
+      setPricesAreReference(result.live !== true);
       setPrices(fetchedPrices.length > 0 ? fetchedPrices : (MARKET_PRICES as Price[]));
     } finally {
       setLoading(false);
@@ -38,6 +40,7 @@ const PriceDashboard: React.FC = () => {
         const result = await fetchMarketPrices();
         if (!isActive) return;
         const fetchedPrices = Array.isArray(result.data) ? (result.data as Price[]) : [];
+        setPricesAreReference(result.live !== true);
         setPrices(fetchedPrices.length > 0 ? fetchedPrices : (MARKET_PRICES as Price[]));
       } finally {
         if (isActive) {
@@ -247,6 +250,9 @@ const PriceDashboard: React.FC = () => {
             ) : (
               <div>
                 <h2 className="section-title mb-8">{t('pricing.currentMarketPrices')}</h2>
+                {pricesAreReference && (
+                  <p className="mb-6 text-sm text-amber-700">{t('pricing.referenceDataNotice')}</p>
+                )}
                 <div className="grid grid-cols-1 gap-6">
                   {prices.map((price, index) => {
                     const diff = getPriceDifference(price.mspPrice, price.marketPrice);

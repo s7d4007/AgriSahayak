@@ -31,8 +31,10 @@ export const detectDiseaseFromBuffer = async (
   mimeType: string
 ): Promise<{ predictions: DetectionPrediction[]; isMockDetection: boolean }> => {
   if (!HF_API_KEY || HF_API_KEY === 'hf_xxxxxxxxxxxxxxxxxxxx') {
-    console.warn('[diseaseService] HF_API_KEY not configured – using mock detection');
-    return performMockDetection();
+    throw Object.assign(new Error('Disease detection is unavailable until HF_API_KEY is configured.'), {
+      statusCode: 503,
+      retryable: false,
+    });
   }
 
   try {
@@ -54,8 +56,10 @@ export const detectDiseaseFromBuffer = async (
     const predictions: HFPrediction[] = response.data;
 
     if (!Array.isArray(predictions) || predictions.length === 0) {
-      console.warn('[diseaseService] Empty response from HF API – falling back to mock');
-      return performMockDetection();
+      throw Object.assign(new Error('Disease detection returned no predictions.'), {
+        statusCode: 502,
+        retryable: true,
+      });
     }
 
     // Take top 3 predictions
@@ -85,44 +89,9 @@ export const detectDiseaseFromBuffer = async (
     }
 
     console.error('[diseaseService] HF API error:', err.message, err.response?.data);
-    console.warn('[diseaseService] Falling back to mock detection');
-    return performMockDetection();
-  }
-};
-
-/** Mock disease detection – used as fallback when HF API unavailable */
-const performMockDetection = (): { predictions: DetectionPrediction[]; isMockDetection: boolean } => {
-  const diseaseList = [
-    'apple___scab',
-    'leaf_spot',
-    'powdery_mildew',
-    'rust_disease',
-    'blight_disease',
-    'mosaic_virus',
-    'anthracnose',
-    'healthy',
-  ];
-
-  const usedIndices = new Set<number>();
-  const predictions: DetectionPrediction[] = [];
-
-  for (let i = 0; i < 3; i++) {
-    let idx: number;
-    do {
-      idx = Math.floor(Math.random() * diseaseList.length);
-    } while (usedIndices.has(idx) && usedIndices.size < diseaseList.length);
-
-    usedIndices.add(idx);
-    const label = diseaseList[idx];
-    const baseConf = 90 - i * 25;
-    const confidence = Math.max(40, baseConf + Math.floor(Math.random() * 10) - 5);
-
-    predictions.push({
-      disease: getDiseaseInfo(label),
-      confidence,
-      rank: getRank(confidence),
+    throw Object.assign(new Error('Disease detection is temporarily unavailable.'), {
+      statusCode: 502,
+      retryable: true,
     });
   }
-
-  return { predictions, isMockDetection: true };
 };

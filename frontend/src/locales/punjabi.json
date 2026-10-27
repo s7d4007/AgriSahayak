@@ -118,7 +118,8 @@
     "priceIncreasing": "ਵੱਧ ਰਹੀ ਹੈ",
     "priceDecreasing": "ਘਟ ਰਹੀ ਹੈ",
     "priceStable": "ਸਥਿਰ",
-    "recentlyUpdated": "ਆਖਰੀ ਅੱਪਡੇਟ"
+    "recentlyUpdated": "ਆਖਰੀ ਅੱਪਡੇਟ",
+    "referenceDataNotice": "These are reference prices, not a live market feed."
   },
   "disease": {
     "title": "ਰੋਗ ਪਛਾਣ",

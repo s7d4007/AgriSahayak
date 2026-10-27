@@ -148,7 +148,8 @@
     "priceIncreasing": "ऊपर की ओर बढ़ रहा है",
     "priceDecreasing": "गिरावट",
     "priceStable": "स्थिर",
-    "recentlyUpdated": "अंतिम अपडेट"
+    "recentlyUpdated": "अंतिम अपडेट",
+    "referenceDataNotice": "These are reference prices, not a live market feed."
   },
   "disease": {
     "title": "रोग पहचान",

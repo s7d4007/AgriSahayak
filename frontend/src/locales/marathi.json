@@ -108,7 +108,8 @@
     "priceIncreasing": "वाढत आहे",
     "priceDecreasing": "घटत आहे",
     "priceStable": "स्थिर",
-    "recentlyUpdated": "शेवटचे अद्यतन"
+    "recentlyUpdated": "शेवटचे अद्यतन",
+    "referenceDataNotice": "These are reference prices, not a live market feed."
   },
   "disease": {
     "title": "रोग शोधक",

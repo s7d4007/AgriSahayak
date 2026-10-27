@@ -27,12 +27,6 @@ const classifyCategory = (title: string, description: string): string => {
   return 'market';
 };
 
-const FALLBACK_NEWS = [
-  { id: 'news-1', category: 'scheme', title: 'PM Kisan Yojana Beneficiaries Increased', description: 'Government increases support for small farmers under PM Kisan scheme', date: new Date().toISOString(), source: 'Agricultural Ministry', type: 'info', articleUrl: 'https://pmkisan.gov.in' },
-  { id: 'news-2', category: 'weather', title: 'Monsoon Season Update', description: 'IMD issues seasonal forecast for agricultural regions', date: new Date().toISOString(), source: 'IMD', type: 'warning', articleUrl: 'https://mausam.imd.gov.in' },
-  { id: 'news-3', category: 'market', title: 'Rice Prices at FCI Procurement', description: 'Food Corporation of India updates rice procurement MSP', date: new Date().toISOString(), source: 'FCI', type: 'info', articleUrl: 'https://fci.gov.in' },
-];
-
 export const fetchAgriculturalNews = async () => {
   try {
     const response = await axios.get<{ items?: RssItem[] }>(
@@ -59,9 +53,9 @@ export const fetchAgriculturalNews = async () => {
         };
       });
 
-    return { success: true, data: mapped.length > 0 ? mapped : FALLBACK_NEWS };
+    return { success: true, data: mapped, live: true };
   } catch (error) {
     console.error('[newsService] Error fetching news:', error);
-    return { success: true, data: FALLBACK_NEWS };
+    return { success: false, data: [], live: false, error: 'Live news is currently unavailable.' };
   }
 };

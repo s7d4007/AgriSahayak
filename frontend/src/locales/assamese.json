@@ -148,7 +148,8 @@
     "priceIncreasing": "Trending Up",
     "priceDecreasing": "Declining",
     "priceStable": "Stable",
-    "recentlyUpdated": "Last Updated"
+    "recentlyUpdated": "Last Updated",
+    "referenceDataNotice": "These are reference prices, not a live market feed."
   },
   "disease": {
     "title": "ৰোগ সনাক্তকৰণ",
