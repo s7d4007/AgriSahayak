@@ -1,144 +1,158 @@
-# AgriSahayak 🌱
+# AgriSahayak
 
-A farmer-friendly, open-access agricultural assistance platform. No login required.
+AgriSahayak is an open-access, multilingual agricultural assistance web
+application. It does not require user accounts or authentication. The deployed
+application uses Vercel for the frontend and Render (or another Node.js host)
+for the backend.
 
-**Frontend** → React + TypeScript + Vite + Tailwind CSS + PWA  
-**Backend** → Node.js + Express + TypeScript + Prisma + PostgreSQL
+## What the application provides
 
----
+- Crop advisory based on district, season, and soil type
+- Farm planning with browser-local task and plan storage
+- Plant disease detection through a server-side Hugging Face Inference API
+- Weather data and agricultural tips through OpenWeatherMap
+- Market-price reference information
+- Agricultural news and alerts from a configurable RSS feed
+- Price calculation tools
+- English, Hindi, Marathi, Bengali, Gujarati, Assamese, Odia, and Punjabi UI
+- Offline-friendly browser settings and local storage
 
-## Project Structure
+> **Data transparency:** Market prices currently come from a static national
+> reference table and are not a live mandi feed. Weather and disease detection
+> require their respective backend API keys. News is fetched from a live RSS
+> source and reports an unavailable state if that source cannot be reached.
 
-```
+## Repository structure
+
+```text
 AgriSahayak/
-├── frontend/          # React PWA (deploy to Vercel)
-├── backend/           # Express API (deploy to Render)
-└── README.md
+├── frontend/       # React + TypeScript + Vite + Tailwind CSS PWA
+├── backend/        # Express + TypeScript API
+├── README.md
 ```
 
----
+## Local development
 
-## Quick Start (Local Development)
+### Prerequisites
 
-### 1. Clone & enter the project
+- Node.js 20 or newer
+- npm
+- Backend API keys only for the integrations you want to use
 
-```bash
-git clone <your-repo-url>
-cd AgriSahayak
-```
+### Start the backend
 
-### 2. Set up backend
-
-```bash
+```powershell
 cd backend
 npm install
-
-# Create .env from the example
-copy .env.example .env   # Windows
-# Fill in DATABASE_URL, HF_API_KEY, OPENWEATHER_KEY
-
-# Push schema to PostgreSQL and seed
-npx prisma db push
-npm run db:seed
-
-# Start dev server (port 3001)
+Copy-Item .env.example .env
 npm run dev
 ```
 
-### 3. Set up frontend
+The backend listens on `http://localhost:3001` by default.
 
-```bash
+### Start the frontend
+
+Open a second terminal:
+
+```powershell
 cd frontend
 npm install
-
-# Create .env.local
-echo VITE_API_URL=http://localhost:3001 > .env.local
-
-# Start dev server (port 5173)
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:5173 – the app works without signing in.
+The frontend runs on `http://localhost:5173` by default. The example frontend
+configuration points to the local backend.
 
----
+### Build and lint
 
-## Environment Variables
+```powershell
+cd frontend
+npm run build
+npm run lint
 
-### Backend (`backend/.env`)
+cd ..\backend
+npm run build
+```
 
-| Variable          | Required | Description                                           |
-| ----------------- | -------- | ----------------------------------------------------- |
-| `DATABASE_URL`    | ✅       | PostgreSQL connection string                          |
-| `HF_API_KEY`      | ✅       | Hugging Face API token (disease detection)            |
-| `OPENWEATHER_KEY` | ✅       | OpenWeatherMap API key                                |
-| `FRONTEND_URL`    | ✅       | Allowed CORS origin(s), comma-separated               |
-| `PORT`            | ❌       | Default `3001`                                        |
-| `HF_MODEL_ID`     | ❌       | Default: `nateraw/vit-base-patch16-224-plant-disease` |
+The repository currently has no automated unit, integration, or end-to-end test
+script. The build and lint commands are the available static validation checks.
 
-### Frontend (`frontend/.env.local`)
+## Environment variables
 
-| Variable       | Required | Description                                                |
-| -------------- | -------- | ---------------------------------------------------------- |
-| `VITE_API_URL` | ✅       | Backend base URL (e.g. `https://agrisahayak.onrender.com`) |
+### Backend: `backend/.env`
 
----
+| Variable            | Required              | Description                                                                    |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------ |
+| `PORT`            | No                    | HTTP port; defaults to `3001`                                                |
+| `NODE_ENV`        | No                    | Runtime mode, for example `production`                                       |
+| `FRONTEND_URL`    | Recommended           | Comma-separated allowed frontend origins                                       |
+| `HF_API_KEY`      | For disease detection | Hugging Face access token                                                      |
+| `HF_MODEL_ID`     | No                    | Hugging Face model; defaults to `nateraw/vit-base-patch16-224-plant-disease` |
+| `OPENWEATHER_KEY` | For live weather      | OpenWeatherMap API key                                                         |
+| `NEWS_RSS_URL`    | No                    | RSS feed URL; defaults to Indian agriculture news                              |
 
-## API Endpoints
+No backend secret should be placed in frontend `VITE_*` variables. The disease
+and weather keys are read by the backend and are not sent to browsers.
 
-| Method | Endpoint                  | Description                         |
-| ------ | ------------------------- | ----------------------------------- |
-| GET    | `/api/health`             | Health check                        |
-| POST   | `/api/advisory/recommend` | Crop recommendations by season/soil |
-| POST   | `/api/disease/detect`     | Plant disease detection (multipart) |
-| GET    | `/api/weather?lat=&lon=`  | Weather + agricultural tips         |
-| GET    | `/api/market-prices`      | Market price data                   |
-| GET    | `/api/news`               | Agricultural news                   |
-| GET    | `/api/crops`              | Crop knowledge base                 |
-| GET    | `/api/diseases`           | Disease knowledge base              |
+### Frontend: `frontend/.env.local`
 
----
+| Variable         | Required    | Description                                         |
+| ---------------- | ----------- | --------------------------------------------------- |
+| `VITE_API_URL` | Recommended | Backend base URL, such as `http://localhost:3001` |
+
+If `VITE_API_URL` is omitted, the frontend defaults to
+`http://localhost:3001`.
+
+## API endpoints
+
+| Method | Endpoint                    | Purpose                       |
+| ------ | --------------------------- | ----------------------------- |
+| GET    | `/api/health`             | Backend health check          |
+| POST   | `/api/advisory/recommend` | Crop recommendations          |
+| POST   | `/api/disease/detect`     | Plant image disease detection |
+| GET    | `/api/weather?lat=&lon=`  | Weather and agricultural tips |
+| GET    | `/api/market-prices`      | Reference market-price data   |
+| GET    | `/api/news`               | Live RSS news                 |
+| GET    | `/api/crops`              | Crop knowledge data           |
+| GET    | `/api/diseases`           | Disease knowledge data        |
+
+All public endpoints are rate-limited. CORS is restricted to the origins
+configured in `FRONTEND_URL`.
 
 ## Deployment
 
-### Frontend → Vercel
+### Frontend on Vercel
 
-1. Import the `AgriSahayak` repo in Vercel
-2. Set **Root Directory** to `frontend`
-3. Add env var: `VITE_API_URL=https://your-backend.onrender.com`
-4. Deploy (Vercel auto-detects Vite)
+1. Import the repository into Vercel.
+2. Set **Root Directory** to `frontend`.
+3. Set `VITE_API_URL` to the deployed backend URL.
+4. Deploy using Vercel's detected Vite settings.
 
-### Backend → Render
+The `frontend/vercel.json` rewrite keeps client-side routes working on refresh.
 
-1. Create a new **Web Service** on Render
-2. Set **Root Directory** to `backend`
-3. **Build command**: `npm install && npm run build && npx prisma generate`
-4. **Start command**: `node dist/server.js`
-5. Add all env vars from the table above
-6. Set `FRONTEND_URL` to your Vercel URL
+### Backend on Render
 
-### Database → Managed PostgreSQL
+1. Create a Render Web Service from the repository.
+2. Set **Root Directory** to `backend`.
+3. Use `npm install && npm run build` as the build command.
+4. Use `npm start` as the start command.
+5. Add the backend variables from the table above.
+6. Set `FRONTEND_URL` to the exact Vercel origin, without a trailing path.
+7. Verify `https://<backend-host>/api/health` after deployment.
 
-- Render, Railway, Supabase, or Neon all work.
-- Copy the connection string as `DATABASE_URL`.
-- Run `npx prisma migrate deploy` from the backend after the first deploy (or use `db push` for quick setup).
+The backend does not use Prisma or a database in its current implementation.
+Its crop, disease, advisory, and market reference data are served from source
+files, while farm plans and settings remain in the user's browser.
 
----
+## Privacy and limitations
 
-## Features
-
-| Feature                 | Data Storage                                        |
-| ----------------------- | --------------------------------------------------- |
-| Crop Advisory           | PostgreSQL (recommendations), browser (preferences) |
-| Plant Disease Detection | Hugging Face AI (server-side)                       |
-| Weather                 | OpenWeatherMap (server-side proxy)                  |
-| Market Prices           | Static + extensible                                 |
-| Agricultural News       | RSS proxy (server-side)                             |
-| Farm Planner / Tasks    | IndexedDB (offline, no account needed)              |
-| Settings / Language     | localStorage                                        |
-
----
-
-## Farmer Privacy
-
-No accounts, no sign-up, no personal data stored on the server.  
-Farm plans and tasks live only in the farmer's own browser.
+- No account, login, or server-side personal profile is required.
+- Farm plans and settings are stored locally in the user's browser.
+- Uploaded disease images are processed by the backend and forwarded to the
+  configured Hugging Face service; configure retention and provider policies
+  according to the deployment requirements.
+- Market prices should not be presented as current exchange or mandi prices
+  until a verified live market provider is integrated.
+- External integrations can become unavailable, and the UI displays an
+  explicit unavailable or offline state.
