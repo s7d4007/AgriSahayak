@@ -102,7 +102,7 @@ const NewsAlerts: React.FC = () => {
         {/* News Grid */}
         {loading ? (
           <div className="card text-center py-12">
-            <p className="text-accent-600">Loading news...</p>
+            <p className="text-accent-600">{t('news.loading')}</p>
           </div>
         ) : filteredNews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,10 +125,10 @@ const NewsAlerts: React.FC = () => {
                     )}`}
                   >
                     {item.type === 'warning'
-                      ? '⚠️ Warning'
+                      ? `⚠️ ${t('news.warning')}`
                       : item.type === 'alert'
-                      ? '🚨 Alert'
-                      : 'ℹ️ Info'}
+                      ? `🚨 ${t('news.alert')}`
+                      : `ℹ️ ${t('news.info')}`}
                   </span>
                 </div>
 
@@ -173,25 +173,25 @@ const NewsAlerts: React.FC = () => {
         {/* Info Box */}
         <div className="mt-12 card bg-gradient-to-r from-primary-50 to-secondary-50">
           <h3 className="font-bold text-xl text-accent-900 mb-4">
-            How to Stay Updated
+            {t('news.howToStayUpdated')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <h4 className="font-semibold text-accent-900 mb-2">✓ Weather Alerts</h4>
+              <h4 className="font-semibold text-accent-900 mb-2">✓ {t('news.weatherAlerts')}</h4>
               <p className="text-sm text-accent-600">
-                Get advance warnings about heavy rains, droughts, and other weather events.
+                {t('news.weatherTips')}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-accent-900 mb-2">✓ Government Schemes</h4>
+              <h4 className="font-semibold text-accent-900 mb-2">✓ {t('news.schemeUpdates')}</h4>
               <p className="text-sm text-accent-600">
-                Never miss subsidies, loans, and support programs launched for farmers.
+                {t('news.schemeTips')}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-accent-900 mb-2">✓ Market Updates</h4>
+              <h4 className="font-semibold text-accent-900 mb-2">✓ {t('news.marketUpdates')}</h4>
               <p className="text-sm text-accent-600">
-                Stay informed about crop prices and optimal harvesting times.
+                {t('news.marketTips')}
               </p>
             </div>
           </div>

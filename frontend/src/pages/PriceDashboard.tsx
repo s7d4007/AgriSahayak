@@ -73,7 +73,7 @@ const PriceDashboard: React.FC = () => {
             <h1 className="text-4xl font-bold">{t('pricing.title')}</h1>
           </div>
           <p className="text-primary-100">
-            Check government MSP rates and real-time market prices for informed selling decisions.
+            {t('pricing.description')}
           </p>
         </div>
       </section>
@@ -85,26 +85,26 @@ const PriceDashboard: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="card sticky top-24">
               <h2 className="text-xl font-bold text-accent-900 mb-6">
-                Price Information
+                {t('pricing.priceInformation')}
               </h2>
 
               <div className="space-y-6">
                 <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-accent-900 mb-2">MSP (Minimum Support Price)</h3>
+                  <h3 className="font-semibold text-accent-900 mb-2">{t('pricing.mspDefinition')}</h3>
                   <p className="text-sm text-accent-600">
-                    Government guaranteed price below which your produce cannot be bought.
+                    {t('pricing.mspDefinitionDesc')}
                   </p>
                 </div>
 
                 <div className="bg-green-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-accent-900 mb-2">Market Price</h3>
+                  <h3 className="font-semibold text-accent-900 mb-2">{t('pricing.marketDefinition')}</h3>
                   <p className="text-sm text-accent-600">
-                    Current buying prices in major agricultural markets (mandis).
+                    {t('pricing.marketDefinitionDesc')}
                   </p>
                 </div>
 
                 <div className="bg-purple-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-accent-900 mb-2">Negotiation Tips</h3>
+                  <h3 className="font-semibold text-accent-900 mb-2">{t('pricing.negotiationTips')}</h3>
                   <ul className="text-sm text-accent-600 space-y-2">
                     <li>✓ {t('pricing.tip1')}</li>
                     <li>✓ {t('pricing.tip2')}</li>
@@ -117,7 +117,7 @@ const PriceDashboard: React.FC = () => {
                   onClick={loadPrices}
                   className="btn-primary w-full"
                 >
-                  Refresh Prices
+                  {t('pricing.refreshPrices')}
                 </button>
               </div>
             </div>
@@ -127,7 +127,7 @@ const PriceDashboard: React.FC = () => {
           <div className="lg:col-span-2">
             {loading ? (
               <div className="card text-center py-12">
-                <p className="text-accent-600">Loading prices...</p>
+                <p className="text-accent-600">{t('pricing.loading')}</p>
               </div>
             ) : selectedCommodity ? (
               <div className="space-y-6">
@@ -135,7 +135,7 @@ const PriceDashboard: React.FC = () => {
                   onClick={() => setSelectedCommodity(null)}
                   className="text-primary-600 font-medium hover:text-primary-700 flex items-center gap-2"
                 >
-                  ← Back to Prices
+                  ← {t('pricing.backToPrices')}
                 </button>
 
                 <div className="card">
@@ -146,20 +146,20 @@ const PriceDashboard: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {/* MSP Price */}
                     <div className="bg-blue-50 rounded-lg p-6">
-                      <p className="text-sm text-accent-600 mb-2">MSP Price (₹/Quintal)</p>
+                      <p className="text-sm text-accent-600 mb-2">{t('pricing.mspPrice')} (₹/Quintal)</p>
                       <p className="text-3xl font-bold text-blue-700">
                         ₹{selectedCommodity.mspPrice}
                       </p>
-                      <p className="text-xs text-accent-500 mt-2">Government Guarantee</p>
+                      <p className="text-xs text-accent-500 mt-2">{t('pricing.governmentGuarantee')}</p>
                     </div>
 
                     {/* Market Price */}
                     <div className="bg-green-50 rounded-lg p-6">
-                      <p className="text-sm text-accent-600 mb-2">Market Price (₹/Quintal)</p>
+                      <p className="text-sm text-accent-600 mb-2">{t('pricing.marketPrice')} (₹/Quintal)</p>
                       <p className="text-3xl font-bold text-green-700">
                         ₹{selectedCommodity.marketPrice}
                       </p>
-                      <p className="text-xs text-accent-500 mt-2">Current Rate</p>
+                      <p className="text-xs text-accent-500 mt-2">{t('pricing.currentRate')}</p>
                     </div>
 
                     {/* Price Difference */}
@@ -173,7 +173,7 @@ const PriceDashboard: React.FC = () => {
                           : 'bg-red-50'
                       }`}
                     >
-                      <p className="text-sm text-accent-600 mb-2">Price Difference</p>
+                      <p className="text-sm text-accent-600 mb-2">{t('pricing.difference')}</p>
                       <p
                         className={`text-3xl font-bold ${
                           getPriceDifference(
@@ -200,14 +200,14 @@ const PriceDashboard: React.FC = () => {
                           selectedCommodity.mspPrice,
                           selectedCommodity.marketPrice
                         )}
-                        % Change
+                        % {t('pricing.change')}
                       </p>
                     </div>
                   </div>
 
                   {/* Price Trend */}
                   <div className="border-t border-accent-200 pt-6">
-                    <h3 className="font-bold text-lg text-accent-900 mb-4">Price Trend</h3>
+                    <h3 className="font-bold text-lg text-accent-900 mb-4">{t('pricing.priceOutlook')}</h3>
                     <div className="flex items-center gap-4">
                       <div
                         className={`p-3 rounded-lg ${
@@ -231,15 +231,15 @@ const PriceDashboard: React.FC = () => {
                       <div>
                         <p className="font-semibold text-accent-900">
                           {selectedCommodity.trend === 'up'
-                            ? 'Price Increasing'
+                            ? t('pricing.priceIncreasing')
                             : selectedCommodity.trend === 'down'
-                            ? 'Price Decreasing'
-                            : 'Price Stable'}
+                            ? t('pricing.priceDecreasing')
+                            : t('pricing.priceStable')}
                         </p>
                         <p className="text-sm text-accent-600">
                           {selectedCommodity.lastUpdated
                             ? new Date(selectedCommodity.lastUpdated).toLocaleDateString()
-                            : 'Recently updated'}
+                            : t('pricing.recentlyUpdated')}
                         </p>
                       </div>
                     </div>
@@ -248,7 +248,7 @@ const PriceDashboard: React.FC = () => {
               </div>
             ) : (
               <div>
-                <h2 className="section-title mb-8">Current Market Prices</h2>
+                <h2 className="section-title mb-8">{t('pricing.currentMarketPrices')}</h2>
                 <div className="grid grid-cols-1 gap-6">
                   {prices.map((price, index) => {
                     const diff = getPriceDifference(price.mspPrice, price.marketPrice);
@@ -274,14 +274,14 @@ const PriceDashboard: React.FC = () => {
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-accent-500 uppercase">Market</p>
+                                <p className="text-xs text-accent-500 uppercase">{t('pricing.marketPrices')}</p>
                                 <p className="text-lg font-bold text-green-700">
                                   ₹{price.marketPrice}
                                 </p>
                               </div>
                               <div>
                                 <p className="text-xs text-accent-500 uppercase">
-                                  Difference
+                                  {t('pricing.difference')}
                                 </p>
                                 <p
                                   className={`text-lg font-bold ${
@@ -292,11 +292,11 @@ const PriceDashboard: React.FC = () => {
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-accent-500 uppercase">Status</p>
+                                <p className="text-xs text-accent-500 uppercase">{t('pricing.status')}</p>
                                 {isAboveMSP ? (
-                                  <span className="badge-success">Above MSP</span>
+                                  <span className="badge-success">{t('pricing.aboveMsp')}</span>
                                 ) : (
-                                  <span className="badge-danger">Below MSP</span>
+                                  <span className="badge-danger">{t('pricing.belowMsp')}</span>
                                 )}
                               </div>
                             </div>

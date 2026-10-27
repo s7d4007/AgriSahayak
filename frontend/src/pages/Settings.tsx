@@ -136,7 +136,7 @@ const SettingsPage: React.FC = () => {
             <h1 className="text-4xl font-bold">{t('settings.title')}</h1>
           </div>
           <p className="text-primary-100">
-            Customize your AgriSahayak experience
+            {t('settings.description')}
           </p>
         </div>
       </section>
@@ -185,7 +185,7 @@ const SettingsPage: React.FC = () => {
             </div>
 
             <p className="text-sm text-accent-600 mt-4">
-              Select your preferred language. The app will be translated immediately.
+              {t('settings.selectLanguage')}
             </p>
           </div>
 
@@ -218,8 +218,7 @@ const SettingsPage: React.FC = () => {
                   ></div>
                 </div>
                 <p className="text-xs text-accent-600 mt-2">
-                  Using {formatBytes(dbSize.usage)} of{' '}
-                  {formatBytes(dbSize.quota)} available
+                  {t('settings.usingStorage', { used: formatBytes(dbSize.usage), available: formatBytes(dbSize.quota) })}
                 </p>
               </div>
 
@@ -236,12 +235,11 @@ const SettingsPage: React.FC = () => {
                 className="btn-outline w-full flex items-center justify-center gap-2 text-red-600 border-red-300 bg-red-50 hover:bg-red-100"
               >
                 <Trash2 className="w-5 h-5" />
-                {loading ? 'Clearing...' : t('settings.clearCache')}
+                {loading ? t('settings.clearing') : t('settings.clearCache')}
               </button>
 
               <p className="text-sm text-accent-600">
-                Clear all cached data including crops, prices, and news. The app will
-                redownload essential data when you go online again.
+                {t('settings.clearCacheDescription')}
               </p>
             </div>
           </div>
@@ -264,26 +262,24 @@ const SettingsPage: React.FC = () => {
               </div>
 
               <div className="py-3 border-b border-accent-200">
-                <h3 className="font-semibold text-accent-900 mb-2">About {APP_NAME}</h3>
+                <h3 className="font-semibold text-accent-900 mb-2">{t('settings.aboutTitle', { name: APP_NAME })}</h3>
                 <p className="text-sm text-accent-600">
-                  {APP_NAME} is a Progressive Web App designed to empower Indian farmers with
-                  hyperlocal crop recommendations, real-time market prices, offline disease
-                  detection, and agricultural news - all in your preferred language.
+                  {t('settings.aboutDescription', { name: APP_NAME })}
                 </p>
               </div>
 
               <div className="bg-green-50 rounded-lg p-4">
                 <h3 className="font-semibold text-accent-900 mb-2 flex items-center gap-2">
                   <Info className="w-5 h-5 text-green-600" />
-                  Key Features
+                  {t('settings.keyFeatures')}
                 </h3>
                 <ul className="text-sm text-accent-600 space-y-1">
-                  <li>✓ Works completely offline</li>
-                  <li>✓ Multilingual support (8 languages)</li>
-                  <li>✓ Hyperlocal crop recommendations</li>
-                  <li>✓ Real-time market prices</li>
-                  <li>✓ AI-powered disease detection</li>
-                  <li>✓ Government scheme alerts</li>
+                  <li>✓ {t('settings.featureOffline')}</li>
+                  <li>✓ {t('settings.featureLanguages')}</li>
+                  <li>✓ {t('settings.featureRecommendations')}</li>
+                  <li>✓ {t('settings.featurePrices')}</li>
+                  <li>✓ {t('settings.featureDisease')}</li>
+                  <li>✓ {t('settings.featureSchemes')}</li>
                 </ul>
               </div>
             </div>
