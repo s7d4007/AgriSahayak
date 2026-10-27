@@ -22,9 +22,8 @@ const PriceDashboard: React.FC = () => {
     setLoading(true);
     try {
       const result = await fetchMarketPrices();
-      if (result.success) {
-        setPrices((result.data as Price[]) || MARKET_PRICES);
-      }
+      const fetchedPrices = Array.isArray(result.data) ? (result.data as Price[]) : [];
+      setPrices(fetchedPrices.length > 0 ? fetchedPrices : (MARKET_PRICES as Price[]));
     } finally {
       setLoading(false);
     }
@@ -38,9 +37,8 @@ const PriceDashboard: React.FC = () => {
       try {
         const result = await fetchMarketPrices();
         if (!isActive) return;
-        if (result.success) {
-          setPrices((result.data as Price[]) || MARKET_PRICES);
-        }
+        const fetchedPrices = Array.isArray(result.data) ? (result.data as Price[]) : [];
+        setPrices(fetchedPrices.length > 0 ? fetchedPrices : (MARKET_PRICES as Price[]));
       } finally {
         if (isActive) {
           setLoading(false);
