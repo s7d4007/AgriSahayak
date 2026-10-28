@@ -26,19 +26,24 @@ function getDb() {
   return dbPromise;
 }
 
-export async function saveFeedback(item: FeedbackItem) {
+export async function saveFeedback(item: FeedbackItem): Promise<void> {
   const db = await getDb();
   const tx = db.transaction("feedback", "readwrite");
   tx.objectStore("feedback").put(item);
-  return tx.oncomplete;
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
 }
 
 export async function getAllFeedback(): Promise<FeedbackItem[]> {
   const db = await getDb();
   const tx = db.transaction("feedback", "readonly");
   const store = tx.objectStore("feedback");
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const req = store.getAll();
     req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
   });
 }

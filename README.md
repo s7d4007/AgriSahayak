@@ -64,7 +64,7 @@ npm run dev
 The frontend runs on `http://localhost:5173` by default. The example frontend
 configuration points to the local backend.
 
-### Build and lint
+### Build, lint, and unit tests
 
 ```powershell
 cd frontend
@@ -75,8 +75,23 @@ cd ..\backend
 npm run build
 ```
 
-The repository currently has no automated unit, integration, or end-to-end test
-script. The build and lint commands are the available static validation checks.
+Run the unit tests separately for each package:
+
+```powershell
+cd frontend
+npm test
+
+cd ..\backend
+npm test
+```
+
+The tests use Vitest. They exercise backend services and frontend API/local
+storage behavior with controlled test data and mocked external services, so
+they do not require backend API keys or live network services. They are
+separate from normal development and production commands.
+
+Use `npm run test:watch` while developing tests, or
+`npm run test:coverage` to generate a coverage report.
 
 ## Environment variables
 
