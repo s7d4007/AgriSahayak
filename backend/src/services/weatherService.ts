@@ -123,7 +123,11 @@ export const fetchWeatherData = async (
 
     return { success: true, data: weatherData };
   } catch (error: unknown) {
-    console.error('[weatherService] Error:', error);
+    const err = error as { message?: string; response?: { status?: number } };
+    console.error('[weatherService] Request failed:', {
+      message: err.message,
+      status: err.response?.status,
+    });
     return { success: false, error: 'Failed to fetch weather data' };
   }
 };

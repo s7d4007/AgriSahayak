@@ -14,10 +14,7 @@ const api = axios.create({
 // ─── Response interceptor (error logging only, no auth) ──
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    console.error('[API error]', error.response?.status, error.message);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // ─── Types ───────────────────────────────────────────────
@@ -159,10 +156,15 @@ export const detectPlantDisease = async (imageData: string | File) => {
     };
 
     if (err.response?.status === 503) {
+      const retryable = err.response.data?.retryable ?? false;
       return {
         success: false,
-        retryable: true,
-        error: err.response.data?.error || 'Model is loading. Please try again.',
+        retryable,
+        error:
+          err.response.data?.error ||
+          (retryable
+            ? 'Model is loading. Please try again.'
+            : 'Disease detection is not configured on the backend.'),
       };
     }
 

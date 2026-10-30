@@ -154,7 +154,11 @@ The `frontend/vercel.json` rewrite keeps client-side routes working on refresh.
 4. Use `npm start` as the start command.
 5. Add the backend variables from the table above.
 6. Set `FRONTEND_URL` to the exact Vercel origin, without a trailing path.
-7. Verify `https://<backend-host>/api/health` after deployment.
+7. Set `FRONTEND_URL` to a comma-separated list containing every allowed
+   frontend origin. For example, include `http://localhost:5173` when testing
+   the deployed backend from the local Vite frontend:
+   `https://your-production-frontend.example,http://localhost:5173`.
+8. Verify `https://<backend-host>/api/health` after deployment.
 
 The backend does not use Prisma or a database in its current implementation.
 Its crop, disease, advisory, and market reference data are served from source
