@@ -41,7 +41,6 @@ describe('detectDiseaseFromBuffer', () => {
       'https://crop.kindwise.com/api/v1/identification',
       {
         images: [`data:image/jpeg;base64,${Buffer.from('image').toString('base64')}`],
-        health: 'all',
       },
       expect.objectContaining({
         headers: expect.objectContaining({
