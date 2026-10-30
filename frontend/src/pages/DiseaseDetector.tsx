@@ -4,6 +4,7 @@ import { Camera, Upload, AlertCircle, Info, Loader } from 'lucide-react';
 import { saveDiagnostic } from '../services/db';
 import { detectPlantDisease } from '../services/api';
 import type { DiseaseInfo } from '../utils/diseaseMapping';
+import { getLocalizedDisease } from '../utils/diseaseTranslations';
 
 interface DetectionResult {
   predictions: Array<{
@@ -17,7 +18,7 @@ interface DetectionResult {
 }
 
 const DiseaseDetector: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [detectionResult, setDetectionResult] = useState<DetectionResult | null>(null);
@@ -229,6 +230,58 @@ const DiseaseDetector: React.FC = () => {
     if (cameraInputRef.current) {
       cameraInputRef.current.value = '';
     }
+  };
+
+  const escapeHtml = (value: string): string =>
+    value.replace(/[&<>"']/g, (character) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character] || character
+    ));
+
+  const handleShareResults = () => {
+    if (!detectionResult) return;
+
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      setError('Please allow pop-ups to save the PDF report.');
+      return;
+    }
+
+    const localizedPredictions = detectionResult.predictions.map((prediction) => ({
+      ...prediction,
+      disease: getLocalizedDisease(prediction.disease, i18n.language),
+    }));
+    const reportTitle = escapeHtml(t('disease.title'));
+    const crop = detectionResult.crop
+      ? `<p><strong>${escapeHtml(t('disease.crop') || 'Crop')}:</strong> ${escapeHtml(detectionResult.crop.name)} (${detectionResult.crop.confidence}%)</p>`
+      : '';
+    const predictions = localizedPredictions.length > 0
+      ? localizedPredictions.map((prediction, index) => `
+          <section>
+            <h2>${index + 1}. ${escapeHtml(prediction.disease.name)}</h2>
+            <p><strong>${escapeHtml(t('disease.confidence') || 'Confidence')}:</strong> ${prediction.confidence}%</p>
+            <p>${escapeHtml(prediction.disease.description)}</p>
+            <p><strong>${escapeHtml(t('disease.treatment') || 'Treatment')}:</strong> ${prediction.disease.treatment.map(escapeHtml).join('; ')}</p>
+            <p><strong>${escapeHtml(t('disease.prevention') || 'Prevention')}:</strong> ${prediction.disease.prevention.map(escapeHtml).join('; ')}</p>
+          </section>
+        `).join('')
+      : `<p>${escapeHtml(t('disease.noDisease') || 'No disease was identified in this image.')}</p>`;
+
+    reportWindow.document.write(`<!doctype html><html><head><title>${reportTitle}</title>
+      <style>
+        body { font-family: Arial, sans-serif; color: #173b2b; max-width: 760px; margin: 32px auto; line-height: 1.5; }
+        h1 { color: #168442; border-bottom: 2px solid #168442; padding-bottom: 8px; }
+        h2 { color: #245c43; margin-bottom: 4px; }
+        section { border-top: 1px solid #d5e5da; padding: 14px 0; }
+        .meta { background: #f0faf3; padding: 12px; border-radius: 6px; }
+        @media print { body { margin: 16px; } }
+      </style></head><body>
+      <h1>${reportTitle}</h1>
+      <div class="meta">${crop}<p><strong>${escapeHtml(t('disease.generated') || 'Generated')}:</strong> ${new Date().toLocaleString()}</p></div>
+      ${predictions}
+      <p><em>${escapeHtml(t('disease.disclaimer') || 'This report is an AI-assisted result. Consult an agricultural expert for critical decisions.')}</em></p>
+      <script>window.onload = () => window.print();</script>
+      </body></html>`);
+    reportWindow.document.close();
   };
 
   /**
@@ -454,7 +507,7 @@ const DiseaseDetector: React.FC = () => {
                           </div>
                           
                           <h3 className="text-xl font-bold text-accent-900 mb-1">
-                            {prediction.disease.name}
+                            {getLocalizedDisease(prediction.disease, i18n.language).name}
                           </h3>
                           <p className="text-sm text-accent-600 mb-3">
                             {prediction.disease.scientificName && (
@@ -575,8 +628,8 @@ const DiseaseDetector: React.FC = () => {
                   >
                     Check Another Leaf
                   </button>
-                  <button className="btn-outline flex-1">
-                    Share Results
+                  <button className="btn-outline flex-1" onClick={handleShareResults} type="button">
+                    {t('disease.shareResults')}
                   </button>
                 </div>
               </div>
