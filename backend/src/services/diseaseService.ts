@@ -79,7 +79,6 @@ export const detectDiseaseFromBuffer = async (
       KINDWISE_API_URL,
       {
         images: [`data:${mimeType};base64,${buffer.toString('base64')}`],
-        similar_images: false,
         health: 'all',
       },
       {
