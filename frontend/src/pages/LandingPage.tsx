@@ -120,7 +120,7 @@ const LandingPage: React.FC = () => {
               icon={<Camera className="w-7 h-7 text-white" />}
               color="bg-orange-500"
               title="AI Disease Detector"
-              description="Snap a picture of a sick plant. Our Hugging Face AI instantly identifies the disease and provides exact treatment procedures."
+              description="Snap a picture of a sick plant. Kindwise AI identifies the crop and possible diseases with treatment guidance."
             />
             <FeatureCard 
               icon={<TrendingUp className="w-7 h-7 text-white" />}

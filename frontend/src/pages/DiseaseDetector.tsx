@@ -11,6 +11,8 @@ interface DetectionResult {
     confidence: number;
     rank: 'High' | 'Mid' | 'Low';
   }>;
+  crop?: { name: string; confidence: number };
+  noDiseaseDetected?: boolean;
   isMockDetection?: boolean;
 }
 
@@ -155,7 +157,12 @@ const DiseaseDetector: React.FC = () => {
       const result = await detectPlantDisease(imageData);
       const resultData = result as unknown as {
         success?: boolean;
-        data?: { predictions?: unknown[]; isMockDetection?: boolean };
+        data?: {
+          predictions?: unknown[];
+          crop?: { name: string; confidence: number };
+          noDiseaseDetected?: boolean;
+          isMockDetection?: boolean;
+        };
         retryable?: boolean;
         error?: string;
       };
@@ -165,6 +172,8 @@ const DiseaseDetector: React.FC = () => {
           const preds = resultData.data.predictions as unknown as DetectionResult['predictions'];
           const detectionData: DetectionResult = {
             predictions: preds,
+            crop: resultData.data.crop,
+            noDiseaseDetected: resultData.data.noDiseaseDetected,
             isMockDetection: resultData.data.isMockDetection || false,
           };
 
@@ -172,24 +181,26 @@ const DiseaseDetector: React.FC = () => {
 
           setDetectionResult(detectionData);
 
-          // Save to IndexedDB (best-effort)
-          try {
-            await saveDiagnostic({
-              imageData,
-              result: {
-                disease: detectionData.predictions[0].disease.name,
-                confidence: detectionData.predictions[0].confidence,
-                timestamp: new Date().toISOString(),
-              },
-            });
-            console.log('Detection result saved to database');
-          } catch (dbError) {
-            console.error('Failed to save to database:', dbError);
+          if (detectionData.predictions.length > 0) {
+            // Save to IndexedDB (best-effort)
+            try {
+              await saveDiagnostic({
+                imageData,
+                result: {
+                  disease: detectionData.predictions[0].disease.name,
+                  confidence: detectionData.predictions[0].confidence,
+                  timestamp: new Date().toISOString(),
+                },
+              });
+              console.log('Detection result saved to database');
+            } catch (dbError) {
+              console.error('Failed to save to database:', dbError);
+            }
           }
 
           if (detectionData.isMockDetection) {
             setError(
-              'Using offline detection. For more accurate results, configure Hugging Face API integration.'
+              'Using offline detection. For more accurate results, configure Kindwise Crop.health integration.'
             );
           }
         }
@@ -386,7 +397,24 @@ const DiseaseDetector: React.FC = () => {
               </div>
             ) : detectionResult ? (
               <div className="space-y-6">
+                {detectionResult.crop && (
+                  <div className="card bg-green-50 border-2 border-green-200">
+                    Identified crop: <strong>{detectionResult.crop.name}</strong> (
+                    {detectionResult.crop.confidence}% confidence)
+                  </div>
+                )}
+                {detectionResult.noDiseaseDetected && (
+                  <div className="card bg-green-50 border-2 border-green-200">
+                    No disease was identified in this image.
+                  </div>
+                )}
+                {detectionResult.predictions.length === 0 && (
+                  <div className="card bg-blue-50 border-2 border-blue-200">
+                    Try a clearer image showing the plant leaves for more detailed disease suggestions.
+                  </div>
+                )}
                 {/* Results Header */}
+                {detectionResult.predictions.length > 0 && (
                 <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
                   <h2 className="text-2xl font-bold text-accent-900 mb-2">
                     🔍 Top Disease Predictions
@@ -395,6 +423,7 @@ const DiseaseDetector: React.FC = () => {
                     Based on AI analysis of your image, here are the 3 most likely conditions detected:
                   </p>
                 </div>
+                )}
 
                 {/* Predictions Grid - 3 Options */}
                 <div className="grid grid-cols-1 gap-6">
@@ -573,4 +602,3 @@ const DiseaseDetector: React.FC = () => {
 };
 
 export default DiseaseDetector;
-

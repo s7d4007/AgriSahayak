@@ -9,7 +9,7 @@ for the backend.
 
 - Crop advisory based on district, season, and soil type
 - Farm planning with browser-local task and plan storage
-- Plant disease detection through a server-side Hugging Face Inference API
+- Crop and plant disease detection through the server-side Kindwise Crop.health API
 - Weather data and agricultural tips through OpenWeatherMap
 - Market-price reference information
 - Agricultural news and alerts from a configurable RSS feed
@@ -102,7 +102,8 @@ Use `npm run test:watch` while developing tests, or
 | `PORT`            | No                    | HTTP port; defaults to `3001`                                                |
 | `NODE_ENV`        | No                    | Runtime mode, for example `production`                                       |
 | `FRONTEND_URL`    | Recommended           | Comma-separated allowed frontend origins                                       |
-| `HF_API_KEY`      | For disease detection | Hugging Face access token                                                      |
+| `KINDWISE_API_KEY` | For disease detection | Kindwise Crop.health API key                                                 |
+| `HF_API_KEY`      | No (retained temporarily) | Legacy Hugging Face access token; not used by disease detection             |
 | `HF_MODEL_ID`     | No                    | Hugging Face model; defaults to `nateraw/vit-base-patch16-224-plant-disease` |
 | `OPENWEATHER_KEY` | For live weather      | OpenWeatherMap API key                                                         |
 | `NEWS_RSS_URL`    | No                    | RSS feed URL; defaults to Indian agriculture news                              |
@@ -152,7 +153,7 @@ The `frontend/vercel.json` rewrite keeps client-side routes working on refresh.
 2. Set **Root Directory** to `backend`.
 3. Use `npm install && npm run build` as the build command.
 4. Use `npm start` as the start command.
-5. Add the backend variables from the table above.
+5. Add the backend variables from the table above, including `KINDWISE_API_KEY`.
 6. Set `FRONTEND_URL` to the exact Vercel origin, without a trailing path.
 7. Set `FRONTEND_URL` to a comma-separated list containing every allowed
    frontend origin. For example, include `http://localhost:5173` when testing
@@ -169,7 +170,7 @@ files, while farm plans and settings remain in the user's browser.
 - No account, login, or server-side personal profile is required.
 - Farm plans and settings are stored locally in the user's browser.
 - Uploaded disease images are processed by the backend and forwarded to the
-  configured Hugging Face service; configure retention and provider policies
+  configured Kindwise service; configure retention and provider policies
   according to the deployment requirements.
 - Market prices should not be presented as current exchange or mandi prices
   until a verified live market provider is integrated.

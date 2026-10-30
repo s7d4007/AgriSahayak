@@ -128,7 +128,7 @@ export const getLocationCoordinates = (): Promise<{ lat: number; lon: number }> 
 };
 
 // ─── Disease Detection ───────────────────────────────────
-// Sends the raw File as multipart/form-data; backend calls Hugging Face.
+// Sends the raw File as multipart/form-data; backend calls Kindwise Crop.health.
 export const detectPlantDisease = async (imageData: string | File) => {
   try {
     const formData = new FormData();
@@ -145,7 +145,7 @@ export const detectPlantDisease = async (imageData: string | File) => {
 
     const result = await api.post('/api/disease/detect', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 45000, // longer timeout for HF inference
+      timeout: 70000, // Kindwise may take time to analyze a cold image
     });
 
     return result.data;

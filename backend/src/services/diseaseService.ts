@@ -2,19 +2,20 @@ import axios from 'axios';
 import 'dotenv/config';
 import { getDiseaseInfo, DiseaseInfo } from '../utils/diseaseMapping';
 
-const HF_MODEL_ID = process.env.HF_MODEL_ID || 'nateraw/vit-base-patch16-224-plant-disease';
-const HF_INFERENCE_URL = `https://router.huggingface.co/hf-inference/models/${HF_MODEL_ID}`;
+const KINDWISE_API_URL = 'https://crop.kindwise.com/api/v1/identification';
 
-const getHuggingFaceApiKey = (): string => (process.env.HF_API_KEY || '').trim();
-
-interface HFPrediction {
-  label: string;
-  score: number;
+interface KindwiseSuggestion {
+  id?: string;
+  name: string;
+  probability: number;
 }
 
-interface HFErrorResponse {
-  error?: string;
-  estimated_time?: number;
+interface KindwiseResponse {
+  result?: {
+    crop?: { suggestions?: KindwiseSuggestion[] };
+    disease?: { suggestions?: KindwiseSuggestion[] };
+    is_plant?: { probability?: number; binary?: boolean };
+  };
 }
 
 interface DetectionPrediction {
@@ -23,100 +24,133 @@ interface DetectionPrediction {
   rank: 'High' | 'Mid' | 'Low';
 }
 
+interface CropIdentification {
+  id?: string;
+  name: string;
+  confidence: number;
+}
+
+interface DiseaseDetectionResult {
+  predictions: DetectionPrediction[];
+  crop?: CropIdentification;
+  noDiseaseDetected: boolean;
+  isMockDetection: false;
+}
+
 const getRank = (confidence: number): 'High' | 'Mid' | 'Low' => {
   if (confidence >= 70) return 'High';
   if (confidence >= 50) return 'Mid';
   return 'Low';
 };
 
+const getKindwiseApiKey = (): string => (process.env.KINDWISE_API_KEY || '').trim();
+
+const toConfidence = (probability: number): number =>
+  Math.round(Math.max(0, Math.min(1, probability)) * 100);
+
+const createProviderError = (
+  message: string,
+  statusCode: number,
+  retryable: boolean
+): Error & { statusCode: number; retryable: boolean } =>
+  Object.assign(new Error(message), { statusCode, retryable });
+
 /**
- * Detect plant disease from image buffer using Hugging Face Inference API
+ * Detect crop and disease from an image buffer using Kindwise Crop.health.
  */
 export const detectDiseaseFromBuffer = async (
   buffer: Buffer,
-  mimeType: string
-): Promise<{ predictions: DetectionPrediction[]; isMockDetection: boolean }> => {
-  const hfApiKey = getHuggingFaceApiKey();
+  _mimeType: string
+): Promise<DiseaseDetectionResult> => {
+  const apiKey = getKindwiseApiKey();
 
-  if (!hfApiKey || hfApiKey === 'hf_xxxxxxxxxxxxxxxxxxxx') {
-    throw Object.assign(new Error('Disease detection is unavailable until HF_API_KEY is configured.'), {
-      statusCode: 503,
-      retryable: false,
-    });
+  if (!apiKey || apiKey === 'your_kindwise_api_key') {
+    throw createProviderError(
+      'Disease detection is unavailable until KINDWISE_API_KEY is configured.',
+      503,
+      false
+    );
   }
 
   try {
-    const response = await axios.post<HFPrediction[]>(HF_INFERENCE_URL, buffer, {
-      headers: {
-        Authorization: `Bearer ${hfApiKey}`,
-        'Content-Type': mimeType,
-        Accept: 'application/json',
-        'X-Wait-For-Model': 'true',
+    const response = await axios.post<KindwiseResponse>(
+      KINDWISE_API_URL,
+      {
+        images: [buffer.toString('base64')],
+        similar_images: false,
       },
-      timeout: 60000,
-    });
+      {
+        headers: {
+          'Api-Key': apiKey,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        timeout: 60000,
+      }
+    );
 
-    const predictions: HFPrediction[] = response.data;
-
-    if (!Array.isArray(predictions) || predictions.length === 0) {
-      throw Object.assign(new Error('Disease detection returned no predictions.'), {
-        statusCode: 502,
-        retryable: true,
-      });
-    }
-
-    const top3 = predictions.slice(0, 3).map((pred): DetectionPrediction => {
-      const confidence = Math.round(pred.score * 100);
+    const result = response.data.result;
+    const cropSuggestion = result?.crop?.suggestions?.[0];
+    const diseaseSuggestions = result?.disease?.suggestions ?? [];
+    const predictions = diseaseSuggestions.slice(0, 3).map((suggestion) => {
+      const confidence = toConfidence(suggestion.probability);
       return {
-        disease: getDiseaseInfo(pred.label),
+        disease: getDiseaseInfo(suggestion.name, suggestion.name),
         confidence,
         rank: getRank(confidence),
       };
     });
 
-    return { predictions: top3, isMockDetection: false };
+    return {
+      predictions,
+      ...(cropSuggestion
+        ? {
+            crop: {
+              id: cropSuggestion.id,
+              name: cropSuggestion.name,
+              confidence: toConfidence(cropSuggestion.probability),
+            },
+          }
+        : {}),
+      noDiseaseDetected: predictions.length === 0,
+      isMockDetection: false,
+    };
   } catch (error: unknown) {
     const err = error as {
-      response?: { status?: number; data?: HFErrorResponse };
+      code?: string;
       message?: string;
+      response?: { status?: number; data?: { error?: string; message?: string } };
     };
+    const status = err.response?.status;
 
-    if (err.response?.status === 503) {
-      const estimatedTime = err.response.data?.estimated_time;
-      const waitMessage =
-        typeof estimatedTime === 'number'
-          ? `Model is loading. Please try again in about ${Math.max(1, Math.ceil(estimatedTime))} seconds.`
-          : 'Model is loading. Please try again in a moment.';
-      throw Object.assign(new Error(waitMessage), {
-        retryable: true,
-        statusCode: 503,
-      });
+    if (err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
+      throw createProviderError('Kindwise disease detection timed out. Please try again.', 504, true);
     }
 
-    if (err.response?.status === 401) {
-      console.error('[diseaseService] Invalid HF API key');
-      throw Object.assign(new Error('Hugging Face API key was rejected.'), {
-        statusCode: 502,
-        retryable: false,
-      });
+    if (status === 401 || status === 403) {
+      console.error('[diseaseService] Kindwise API key was rejected');
+      throw createProviderError('Kindwise API key was rejected.', 502, false);
     }
 
-    if (err.response?.status === 404) {
-      console.error('[diseaseService] HF model was not found:', HF_MODEL_ID);
-      throw Object.assign(new Error('The configured Hugging Face disease model was not found.'), {
-        statusCode: 502,
-        retryable: false,
-      });
+    if (status === 402) {
+      console.error('[diseaseService] Kindwise account has insufficient credits');
+      throw createProviderError('Kindwise account has insufficient credits.', 502, false);
     }
 
-    console.error('[diseaseService] HF API error:', {
+    if (status === 429) {
+      throw createProviderError('Kindwise rate limit reached. Please try again later.', 503, true);
+    }
+
+    if (status && status >= 500) {
+      throw createProviderError('Kindwise service is temporarily unavailable.', 503, true);
+    }
+
+    console.error('[diseaseService] Kindwise API error:', {
+      code: err.code,
       message: err.message,
-      status: err.response?.status,
-      data: err.response?.data?.error,
+      status,
+      providerMessage: err.response?.data?.error || err.response?.data?.message,
     });
-    throw Object.assign(new Error('Disease detection is temporarily unavailable.'), {
-      statusCode: 502,
-      retryable: true,
-    });
+    throw createProviderError('Disease detection is temporarily unavailable.', 502, true);
   }
 };

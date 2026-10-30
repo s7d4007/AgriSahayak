@@ -140,7 +140,7 @@ export const DISEASE_DETAILS: Record<string, DiseaseInfo> = {
 export const normalizeModelLabel = (label: string): string =>
   label.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').trim();
 
-export const getDiseaseInfo = (modelLabel: string): DiseaseInfo => {
+export const getDiseaseInfo = (modelLabel: string, displayName = modelLabel): DiseaseInfo => {
   const normalized = normalizeModelLabel(modelLabel);
   if (DISEASE_DETAILS[normalized]) return DISEASE_DETAILS[normalized];
 
@@ -153,5 +153,8 @@ export const getDiseaseInfo = (modelLabel: string): DiseaseInfo => {
     return DISEASE_DETAILS.healthy;
   }
 
-  return DISEASE_DETAILS.unknown;
+  return {
+    ...DISEASE_DETAILS.unknown,
+    name: displayName,
+  };
 };
