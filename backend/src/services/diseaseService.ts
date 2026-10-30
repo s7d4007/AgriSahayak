@@ -18,6 +18,8 @@ interface KindwiseResponse {
   };
 }
 
+type KindwiseErrorData = Record<string, unknown> | string | null;
+
 interface DetectionPrediction {
   disease: DiseaseInfo;
   confidence: number;
@@ -60,7 +62,7 @@ const createProviderError = (
  */
 export const detectDiseaseFromBuffer = async (
   buffer: Buffer,
-  _mimeType: string
+  mimeType: string
 ): Promise<DiseaseDetectionResult> => {
   const apiKey = getKindwiseApiKey();
 
@@ -76,8 +78,9 @@ export const detectDiseaseFromBuffer = async (
     const response = await axios.post<KindwiseResponse>(
       KINDWISE_API_URL,
       {
-        images: [buffer.toString('base64')],
+        images: [`data:${mimeType};base64,${buffer.toString('base64')}`],
         similar_images: false,
+        health: 'all',
       },
       {
         headers: {
@@ -119,22 +122,55 @@ export const detectDiseaseFromBuffer = async (
     const err = error as {
       code?: string;
       message?: string;
-      response?: { status?: number; data?: { error?: string; message?: string } };
+      response?: {
+        status?: number;
+        headers?: Record<string, string>;
+        data?: KindwiseErrorData;
+      };
     };
     const status = err.response?.status;
+    const providerData = err.response?.data;
+    const providerMessage =
+      typeof providerData === 'string'
+        ? providerData
+        : providerData && typeof providerData === 'object'
+          ? [providerData.error, providerData.message, providerData.detail]
+              .find((value): value is string => typeof value === 'string')
+          : undefined;
 
     if (err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
       throw createProviderError('Kindwise disease detection timed out. Please try again.', 504, true);
     }
 
     if (status === 401 || status === 403) {
-      console.error('[diseaseService] Kindwise API key was rejected');
+      console.error('[diseaseService] Kindwise API key was rejected', {
+        status,
+        headers: err.response?.headers,
+        response: providerData,
+      });
       throw createProviderError('Kindwise API key was rejected.', 502, false);
     }
 
     if (status === 402) {
-      console.error('[diseaseService] Kindwise account has insufficient credits');
+      console.error('[diseaseService] Kindwise account has insufficient credits', {
+        status,
+        headers: err.response?.headers,
+        response: providerData,
+      });
       throw createProviderError('Kindwise account has insufficient credits.', 502, false);
+    }
+
+    if (status === 400) {
+      console.error('[diseaseService] Kindwise rejected the identification request', {
+        status,
+        headers: err.response?.headers,
+        response: providerData,
+      });
+      throw createProviderError(
+        providerMessage || 'Kindwise rejected the image identification request.',
+        400,
+        false
+      );
     }
 
     if (status === 429) {
@@ -149,7 +185,8 @@ export const detectDiseaseFromBuffer = async (
       code: err.code,
       message: err.message,
       status,
-      providerMessage: err.response?.data?.error || err.response?.data?.message,
+      headers: err.response?.headers,
+      response: providerData,
     });
     throw createProviderError('Disease detection is temporarily unavailable.', 502, true);
   }

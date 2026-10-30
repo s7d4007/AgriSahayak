@@ -39,7 +39,11 @@ describe('detectDiseaseFromBuffer', () => {
 
     expect(post).toHaveBeenCalledWith(
       'https://crop.kindwise.com/api/v1/identification',
-      { images: [Buffer.from('image').toString('base64')], similar_images: false },
+      {
+        images: [`data:image/jpeg;base64,${Buffer.from('image').toString('base64')}`],
+        similar_images: false,
+        health: 'all',
+      },
       expect.objectContaining({
         headers: expect.objectContaining({
           'Api-Key': 'test-kindwise-key',
@@ -71,6 +75,22 @@ describe('detectDiseaseFromBuffer', () => {
     await expect(detectDiseaseFromBuffer(Buffer.from('image'), 'image/jpeg')).rejects.toMatchObject({
       message: 'Kindwise API key was rejected.',
       statusCode: 502,
+      retryable: false,
+    });
+  });
+
+  it('returns the provider detail for an invalid identification request', async () => {
+    post.mockRejectedValue({
+      response: {
+        status: 400,
+        headers: { 'x-request-id': 'test-request' },
+        data: { detail: 'Image must be a data URI.' },
+      },
+    });
+
+    await expect(detectDiseaseFromBuffer(Buffer.from('image'), 'image/jpeg')).rejects.toMatchObject({
+      message: 'Image must be a data URI.',
+      statusCode: 400,
       retryable: false,
     });
   });
