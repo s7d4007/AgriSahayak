@@ -1,7 +1,7 @@
 import { openDB } from 'idb';
 import type { DBSchema, IDBPDatabase } from 'idb';
 
-interface AgriSahayakDB extends DBSchema {
+export interface AgriSahayakDB extends DBSchema {
   crops: {
     key: string;
     value: {
@@ -51,6 +51,18 @@ interface AgriSahayakDB extends DBSchema {
       timestamp: number;
     };
   };
+  feedback: {
+    key: string;
+    value: {
+      id: string;
+      message: string;
+      email?: string;
+      rating?: number;
+      language: string;
+      createdAt: string;
+      synced?: boolean;
+    };
+  };
 }
 
 let db: IDBPDatabase<AgriSahayakDB> | null = null;
@@ -58,7 +70,7 @@ let db: IDBPDatabase<AgriSahayakDB> | null = null;
 export const initDB = async () => {
   if (db) return db;
 
-  db = await openDB<AgriSahayakDB>('agrisahayak-db', 1, {
+  db = await openDB<AgriSahayakDB>('agrisahayak-db', 2, {
     upgrade(db) {
       // Create object stores if they don't exist
       if (!db.objectStoreNames.contains('crops')) {
@@ -76,8 +88,15 @@ export const initDB = async () => {
       if (!db.objectStoreNames.contains('diagnostics')) {
         db.createObjectStore('diagnostics', { keyPath: 'id' });
       }
+      if (!db.objectStoreNames.contains('feedback')) {
+        db.createObjectStore('feedback', { keyPath: 'id' });
+      }
     },
   });
+  db.onversionchange = () => {
+    db?.close();
+    db = null;
+  };
 
   return db;
 };
@@ -201,6 +220,7 @@ export const clearDatabase = async () => {
   await database.clear('news');
   await database.clear('diseases');
   await database.clear('diagnostics');
+  await database.clear('feedback');
 };
 
 export const getDBSize = async () => {
