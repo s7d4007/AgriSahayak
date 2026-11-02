@@ -1,34 +1,99 @@
 # AgriSahayak
 
 AgriSahayak is an open-access, multilingual agricultural assistance web
-application. It does not require user accounts or authentication. The deployed
-application uses Vercel for the frontend and Render (or another Node.js host)
-for the backend.
+application for farmers. It does not require user accounts or authentication.
+The frontend is a React, TypeScript, Vite, Tailwind CSS progressive web app
+(PWA), and the backend is an Express and TypeScript API.
 
-## What the application provides
+## Features
 
-- Crop advisory based on district, season, and soil type
-- Farm planning with browser-local task and plan storage
-- Crop and plant disease detection through the server-side Kindwise Crop.health API
-- Weather data and agricultural tips through OpenWeatherMap
-- Market-price reference information
-- Agricultural news and alerts from a configurable RSS feed
-- Price calculation tools
-- English, Hindi, Marathi, Bengali, Gujarati, Assamese, Odia, and Punjabi UI
-- Offline-friendly browser settings and local storage
+- **Weather dashboard:** Uses browser geolocation to show temperature,
+  humidity, wind, conditions, and agricultural tips through OpenWeatherMap.
+  If location permission is unavailable, the app uses a Mumbai fallback
+  coordinate; if the backend is unavailable, it displays an offline weather
+  state.
+- **Crop advisory:** Select an Indian state, district, season, and soil type to
+  receive crop recommendations with expected yield, profitability,
+  sustainability, MSP reference, and crop details.
+- **Farm planner:** Estimate crop yield, water, seed, fertilizer, pesticide,
+  labour, machinery, irrigation, transport, and other costs. Compare Rice,
+  Wheat, Maize, Cotton, and Pulses, save planner inputs locally, and export a
+  printable PDF report from the browser.
+- **Disease detector:** Upload or capture a plant image, send it to the
+  configured Kindwise Crop.health integration, view predictions and treatment
+  or prevention guidance, reset the analysis, and share or print the results.
+  Images are limited to 10 MB by the backend.
+- **Market prices:** View reference commodity prices, MSP and market-price
+  context, price outlook, and negotiation guidance.
+- **Price calculator:** Estimate yield, revenue, costs, profit, break-even
+  point, and the effect of season, weather, soil fertility, irrigation,
+  pesticides, and market price.
+- **News and alerts:** Read agricultural news from a configurable RSS feed
+  with weather, government-scheme, and market-update guidance.
+- **Settings and local data:** Change language, inspect browser storage usage,
+  download locally stored diagnostics and price data as JSON, clear IndexedDB
+  and service-worker caches, and save feedback locally for later use.
+- **Offline-first behavior:** The service worker, IndexedDB storage, local
+  settings, and explicit offline fallbacks allow core local features to keep
+  rendering when network services are unavailable.
+- **Voice navigation:** Use the microphone button inside the app to open
+  pages or dictate short text into the active form field. Speech recognition
+  uses English (`en-IN`) or Hindi (`hi-IN`) based on the selected language and
+  requires HTTPS or localhost plus browser speech-recognition support.
+- **Multilingual UI:** English, Hindi, Marathi, Bengali, Gujarati, Assamese,
+  Odia, and Punjabi are available from Settings. The compact header toggle
+  provides quick access to English and Hindi.
+- **PWA branding:** The app includes a manifest, service worker, and
+  `favicon.svg` for the browser favicon and application logo.
 
-> **Data transparency:** Market prices currently come from a static national
-> reference table and are not a live mandi feed. Weather and disease detection
-> require their respective backend API keys. News is fetched from a live RSS
-> source and reports an unavailable state if that source cannot be reached.
+### Data and integration limitations
+
+- Market prices are currently a static national reference table, not a live
+  mandi feed.
+- Weather requires `OPENWEATHER_KEY`.
+- Disease detection requires `KINDWISE_API_KEY`; without it, the UI reports
+  that detection is unavailable.
+- News is fetched from the configured RSS source and reports an unavailable
+  state if that source cannot be reached.
+- Farm plans, settings, feedback, diagnostics, and cached data are stored in
+  the user's browser, not in a server-side account.
+
+## How to navigate the website
+
+1. Open `/` to view the public landing page. Use **Launch App** or
+   **Start Farming** to enter `/app`.
+2. From the app header on desktop, use the navigation links. On smaller screens,
+   open the hamburger menu.
+3. Use the app logo at any time to return to the dashboard.
+4. Use the microphone button to try voice navigation, or use the language
+   controls to change the interface language.
+
+### Application routes
+
+| Page | URL | How to use it |
+| --- | --- | --- |
+| Landing page | `/` | Review the product overview and select **Launch App**. |
+| Dashboard | `/app` | View the welcome panel, local weather, agricultural tips, and links to key tools. Allow location access for local weather. |
+| Crop Advisory | `/app/crop-advisory` | Choose state, district, season, and soil type, then request recommendations. |
+| Market Prices | `/app/prices` | Review reference prices and market context; refresh the data when needed. |
+| Price Calculator | `/app/price-calculator` | Enter crop, area, investment, labour, season, price, weather, soil, irrigation, and pesticide inputs, then calculate the estimate. |
+| Disease Detector | `/app/disease-detector` | Upload or capture a plant image, run detection, review guidance, and use the share/print result action. |
+| Farm Planner | `/app/farm-planner` | Enter land and crop details, review resource and profitability estimates, compare crops, and export the plan as PDF. |
+| News and Alerts | `/app/news` | Refresh and open agricultural news items from the configured RSS feed. |
+| Settings | `/app/settings` | Change language, manage local data and caches, download data, and submit offline feedback. |
+| Privacy Policy | `/app/privacy` | Read the application's privacy information. |
+| Terms of Service | `/app/terms` | Read the application's terms of service. |
 
 ## Repository structure
 
 ```text
 AgriSahayak/
 ├── frontend/       # React + TypeScript + Vite + Tailwind CSS PWA
-├── backend/        # Express + TypeScript API
-├── README.md
+│   ├── public/     # Manifest, service worker, favicon, and public assets
+│   └── src/        # Pages, components, services, translations, and utilities
+├── backend/        # Express + TypeScript API and source data
+├── favicon.svg     # Source favicon/logo asset
+└── README.md
 ```
 
 ## Local development
@@ -61,80 +126,80 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-The frontend runs on `http://localhost:5173` by default. The example frontend
+The frontend runs on `http://localhost:5173` by default. The example
 configuration points to the local backend.
 
-### Build, lint, and unit tests
+### Build, lint, and test
+
+Run frontend checks:
 
 ```powershell
 cd frontend
 npm run build
 npm run lint
-
-cd ..\backend
-npm run build
+npm test
 ```
 
-Run the unit tests separately for each package:
+Run backend checks:
 
 ```powershell
-cd frontend
-npm test
-
 cd ..\backend
+npm run build
 npm test
 ```
 
-The tests use Vitest. They exercise backend services and frontend API/local
-storage behavior with controlled test data and mocked external services, so
-they do not require backend API keys or live network services. They are
-separate from normal development and production commands.
+Additional test commands are available in both packages:
 
-Use `npm run test:watch` while developing tests, or
-`npm run test:coverage` to generate a coverage report.
+```powershell
+npm run test:watch
+npm run test:coverage
+```
+
+Tests use Vitest and mock external services where required, so they do not
+need live backend API keys or network integrations.
 
 ## Environment variables
 
 ### Backend: `backend/.env`
 
-| Variable            | Required              | Description                                                                    |
-| ------------------- | --------------------- | ------------------------------------------------------------------------------ |
-| `PORT`            | No                    | HTTP port; defaults to `3001`                                                |
-| `NODE_ENV`        | No                    | Runtime mode, for example `production`                                       |
-| `FRONTEND_URL`    | Recommended           | Comma-separated allowed frontend origins                                       |
-| `KINDWISE_API_KEY` | For disease detection | Kindwise Crop.health API key                                                 |
-| `HF_API_KEY`      | No (retained temporarily) | Legacy Hugging Face access token; not used by disease detection             |
-| `HF_MODEL_ID`     | No                    | Hugging Face model; defaults to `nateraw/vit-base-patch16-224-plant-disease` |
-| `OPENWEATHER_KEY` | For live weather      | OpenWeatherMap API key                                                         |
-| `NEWS_RSS_URL`    | No                    | RSS feed URL; defaults to Indian agriculture news                              |
+Copy `backend/.env.example` to `backend/.env`.
 
-No backend secret should be placed in frontend `VITE_*` variables. The disease
-and weather keys are read by the backend and are not sent to browsers.
+| Variable | Required | Description |
+| --- | --- | --- |
+| `PORT` | No | HTTP port; defaults to `3001`. |
+| `NODE_ENV` | No | Runtime mode, such as `development` or `production`. |
+| `FRONTEND_URL` | Recommended | Comma-separated frontend origins allowed by CORS. |
+| `KINDWISE_API_KEY` | For disease detection | Kindwise Crop.health API key. |
+| `OPENWEATHER_KEY` | For live weather | OpenWeatherMap API key. |
+| `NEWS_RSS_URL` | No | RSS feed URL; the backend uses its default agriculture feed when omitted. |
+| `HF_API_KEY` | No | Retained temporarily for provider migration; not used by current disease detection. |
+| `HF_MODEL_ID` | No | Retained model setting; defaults to `nateraw/vit-base-patch16-224-plant-disease`. |
+
+Never put backend secrets in frontend `VITE_*` variables. Disease and weather
+keys are read by the backend and are not sent to browsers.
 
 ### Frontend: `frontend/.env.local`
 
-| Variable         | Required    | Description                                         |
-| ---------------- | ----------- | --------------------------------------------------- |
-| `VITE_API_URL` | Recommended | Backend base URL, such as `http://localhost:3001` |
-
-If `VITE_API_URL` is omitted, the frontend defaults to
-`http://localhost:3001`.
+| Variable | Required | Description |
+| --- | --- | --- |
+| `VITE_API_URL` | Recommended | Backend base URL, such as `http://localhost:3001`. Defaults to that URL when omitted. |
+| `VITE_DEBUG` | No | Optional frontend debug flag retained in the example configuration. |
 
 ## API endpoints
 
-| Method | Endpoint                    | Purpose                       |
-| ------ | --------------------------- | ----------------------------- |
-| GET    | `/api/health`             | Backend health check          |
-| POST   | `/api/advisory/recommend` | Crop recommendations          |
-| POST   | `/api/disease/detect`     | Plant image disease detection |
-| GET    | `/api/weather?lat=&lon=`  | Weather and agricultural tips |
-| GET    | `/api/market-prices`      | Reference market-price data   |
-| GET    | `/api/news`               | Live RSS news                 |
-| GET    | `/api/crops`              | Crop knowledge data           |
-| GET    | `/api/diseases`           | Disease knowledge data        |
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Backend health check |
+| POST | `/api/advisory/recommend` | Crop recommendations |
+| POST | `/api/disease/detect` | Plant image disease detection |
+| GET | `/api/weather?lat=&lon=` | Weather and agricultural tips |
+| GET | `/api/market-prices` | Reference market-price data |
+| GET | `/api/news` | RSS news |
+| GET | `/api/crops` | Crop knowledge data |
+| GET | `/api/diseases` | Disease knowledge data |
 
-All public endpoints are rate-limited. CORS is restricted to the origins
-configured in `FRONTEND_URL`.
+Public endpoints are rate-limited. CORS is restricted to the origins listed in
+`FRONTEND_URL`.
 
 ## Deployment
 
@@ -143,9 +208,10 @@ configured in `FRONTEND_URL`.
 1. Import the repository into Vercel.
 2. Set **Root Directory** to `frontend`.
 3. Set `VITE_API_URL` to the deployed backend URL.
-4. Deploy using Vercel's detected Vite settings.
+4. Deploy with Vercel's detected Vite settings.
 
-The `frontend/vercel.json` rewrite keeps client-side routes working on refresh.
+The frontend rewrite configuration keeps client-side routes working after a
+browser refresh.
 
 ### Backend on Render
 
@@ -153,26 +219,33 @@ The `frontend/vercel.json` rewrite keeps client-side routes working on refresh.
 2. Set **Root Directory** to `backend`.
 3. Use `npm install && npm run build` as the build command.
 4. Use `npm start` as the start command.
-5. Add the backend variables from the table above, including `KINDWISE_API_KEY`.
-6. Set `FRONTEND_URL` to the exact Vercel origin, without a trailing path.
-7. Set `FRONTEND_URL` to a comma-separated list containing every allowed
-   frontend origin. For example, include `http://localhost:5173` when testing
-   the deployed backend from the local Vite frontend:
+5. Add the backend variables listed above, including `KINDWISE_API_KEY` and
+   `OPENWEATHER_KEY` when those integrations are enabled.
+6. Set `FRONTEND_URL` to a comma-separated list of every allowed frontend
+   origin, without trailing paths. For example:
    `https://your-production-frontend.example,http://localhost:5173`.
-8. Verify `https://<backend-host>/api/health` after deployment.
+7. Verify `https://<backend-host>/api/health` after deployment.
 
-The backend does not use Prisma or a database in its current implementation.
-Its crop, disease, advisory, and market reference data are served from source
+The backend does not use Prisma or a database in the current implementation.
+Crop, disease, advisory, and market reference data are served from source
 files, while farm plans and settings remain in the user's browser.
 
 ## Privacy and limitations
 
 - No account, login, or server-side personal profile is required.
-- Farm plans and settings are stored locally in the user's browser.
+- Farm plans, settings, feedback, diagnostics, and cached data are stored
+  locally in the browser.
 - Uploaded disease images are processed by the backend and forwarded to the
-  configured Kindwise service; configure retention and provider policies
-  according to the deployment requirements.
-- Market prices should not be presented as current exchange or mandi prices
+  configured Kindwise service; configure retention and provider policies for
+  your deployment.
+- Market prices should not be treated as current exchange or mandi prices
   until a verified live market provider is integrated.
 - External integrations can become unavailable, and the UI displays an
   explicit unavailable or offline state.
+- Review [Privacy Policy](/app/privacy) and [Terms of Service](/app/terms) in
+  the application before production deployment.
+
+## License
+
+No license file is currently included in this repository. Add a license before
+distributing or reusing the project publicly.
