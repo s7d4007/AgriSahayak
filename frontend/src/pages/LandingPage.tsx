@@ -8,7 +8,7 @@ const LandingPage: React.FC = () => {
       {/* ─── NAVBAR ─────────────────────────────────────── */}
       <nav className="absolute top-0 w-full z-50 py-6 px-6 sm:px-12 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="AgriSahayak Logo" className="w-10 h-10 rounded-full shadow-md" />
+          <img src="/favicon.svg" alt="AgriSahayak Logo" className="w-10 h-10 rounded-full shadow-md" />
           <span className="text-xl font-bold text-slate-800 tracking-tight">AgriSahayak</span>
         </div>
         <div className="flex items-center gap-6">
@@ -163,7 +163,7 @@ const LandingPage: React.FC = () => {
       <footer className="bg-slate-50 py-16 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="AgriSahayak" className="w-8 h-8 rounded-full grayscale opacity-80" />
+            <img src="/favicon.svg" alt="AgriSahayak" className="w-8 h-8 rounded-full grayscale opacity-80" />
             <span className="text-lg font-bold text-slate-700">AgriSahayak</span>
           </div>
           <p className="text-slate-500 text-sm text-center md:text-left">

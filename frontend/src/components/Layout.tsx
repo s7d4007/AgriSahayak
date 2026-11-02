@@ -251,12 +251,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Link to="/app" className="flex items-center gap-2 group shrink-0">
               <div className="p-0">
                 <img
-                  src="/logo.png"
+                  src="/favicon.svg"
                   alt="AgriSahayak"
                   className="w-10 h-10 rounded-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = '/fallback-logo.png';
-                  }}
                 />
               </div>
               <div className="hidden sm:block leading-tight">
@@ -402,7 +399,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.png" alt="AgriSahayak" className="w-8 h-8 rounded-full" />
+                <img src="/favicon.svg" alt="AgriSahayak" className="w-8 h-8 rounded-full" />
                 <h3 className="font-bold text-lg">AgriSahayak</h3>
               </div>
               <p className="text-sm text-gray-300">{t('footer.description')}</p>
