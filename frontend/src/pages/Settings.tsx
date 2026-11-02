@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Settings, Trash2, Download, Info } from 'lucide-react';
 import { clearDatabase, getDBSize, getAllDiagnostics, getAllPrices } from '../services/db';
-import { saveFeedback } from '../services/feedbackStore';
+import { submitFeedback } from '../services/feedbackStore';
 import { LANGUAGES, APP_VERSION, APP_NAME } from '../utils/constants';
 
 const SettingsPage: React.FC = () => {
@@ -11,6 +11,7 @@ const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackEmail, setFeedbackEmail] = useState('');
   const [feedbackSaving, setFeedbackSaving] = useState(false);
 
   const updateDBSize = async () => {
@@ -98,20 +99,20 @@ const SettingsPage: React.FC = () => {
 
     setFeedbackSaving(true);
     try {
-      await saveFeedback({
-        id: crypto.randomUUID(),
+      const result = await submitFeedback({
         message: feedbackText.trim(),
+        email: feedbackEmail.trim() || undefined,
         language: i18n.language,
         createdAt: new Date().toISOString(),
-        synced: false,
       });
 
       setFeedbackText('');
-      setMessage(
-        t('feedback.savedOffline', {
-          defaultValue: 'Feedback saved offline.',
-        })
-      );
+      setFeedbackEmail('');
+      setMessage(result.submitted
+        ? t('feedback.sent', { defaultValue: 'Thank you! Your feedback was sent.' })
+        : t('feedback.savedOffline', {
+            defaultValue: 'Feedback saved offline and will be available for retry.',
+          }));
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
       console.error('Feedback save failed', err);
@@ -301,6 +302,22 @@ const SettingsPage: React.FC = () => {
                   defaultValue: 'Tell us how we can improve AgriSahayak...',
                 })}
                 className="input-field mb-4 h-32"
+                required
+              />
+
+              <label htmlFor="feedback-email" className="sr-only">
+                {t('feedback.emailLabel', { defaultValue: 'Email (optional)' })}
+              </label>
+              <input
+                id="feedback-email"
+                type="email"
+                value={feedbackEmail}
+                onChange={(e) => setFeedbackEmail(e.target.value)}
+                placeholder={t('feedback.emailPlaceholder', {
+                  defaultValue: 'Email (optional)',
+                })}
+                className="input-field mb-4"
+                autoComplete="email"
               />
 
               <button

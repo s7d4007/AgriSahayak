@@ -80,7 +80,7 @@ The frontend is a React, TypeScript, Vite, Tailwind CSS progressive web app
 | Disease Detector | `/app/disease-detector` | Upload or capture a plant image, run detection, review guidance, and use the share/print result action. |
 | Farm Planner | `/app/farm-planner` | Enter land and crop details, review resource and profitability estimates, compare crops, and export the plan as PDF. |
 | News and Alerts | `/app/news` | Refresh and open agricultural news items from the configured RSS feed. |
-| Settings | `/app/settings` | Change language, manage local data and caches, download data, and submit offline feedback. |
+| Settings | `/app/settings` | Change language, manage local data and caches, download data, and submit feedback. |
 | Privacy Policy | `/app/privacy` | Read the application's privacy information. |
 | Terms of Service | `/app/terms` | Read the application's terms of service. |
 
@@ -184,6 +184,7 @@ keys are read by the backend and are not sent to browsers.
 | --- | --- | --- |
 | `VITE_API_URL` | Recommended | Backend base URL, such as `http://localhost:3001`. Defaults to that URL when omitted. |
 | `VITE_DEBUG` | No | Optional frontend debug flag retained in the example configuration. |
+| `VITE_FORMSPREE_ENDPOINT` | Recommended | HTTPS Formspree endpoint used by the Settings feedback form. Leave blank to keep feedback locally. |
 
 ## API endpoints
 
@@ -233,8 +234,9 @@ files, while farm plans and settings remain in the user's browser.
 ## Privacy and limitations
 
 - No account, login, or server-side personal profile is required.
-- Farm plans, settings, feedback, diagnostics, and cached data are stored
-  locally in the browser.
+- Farm plans, settings, diagnostics, and cached data are stored locally in the
+  browser. Feedback is sent to the configured Formspree endpoint when online;
+  if submission fails, it is retained locally.
 - Uploaded disease images are processed by the backend and forwarded to the
   configured Kindwise service; configure retention and provider policies for
   your deployment.

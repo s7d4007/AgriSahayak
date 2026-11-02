@@ -260,6 +260,17 @@
     }
   },
   "settings.languageChanged": "Language changed to {{name}}",
+  "feedback": {
+    "title": "Send Feedback",
+    "placeholder": "Tell us how we can improve AgriSahayak...",
+    "emailLabel": "Email (optional)",
+    "emailPlaceholder": "Email (optional)",
+    "saving": "Sending...",
+    "submit": "Submit Feedback",
+    "sent": "Thank you! Your feedback was sent.",
+    "savedOffline": "Feedback saved offline and will be available for retry.",
+    "saveFailed": "Failed to save feedback."
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
@@ -648,11 +659,11 @@
   },
   "privacy": {
     "title": "Privacy Policy",
-    "description": "Your privacy matters. We store minimal data locally and never share without consent.",
+    "description": "Your privacy matters. We store minimal data locally and only send feedback to Formspree when you submit it.",
     "dataCollectionTitle": "Data Collection",
-    "dataCollection": "We collect image data for disease detection and store it locally on your device for offline use.",
+    "dataCollection": "We process image data for disease detection and store feedback locally when it cannot be submitted. Submitted feedback, including an optional email address, is sent to Formspree.",
     "dataUseTitle": "How We Use Data",
-    "dataUse": "Data is used to provide features like disease detection and is stored locally. You can delete it anytime.",
+    "dataUse": "Data is used to provide app features and improve AgriSahayak. Feedback retained locally can be removed by clearing app data; Formspree-submitted feedback is managed according to Formspree's policies.",
     "contactTitle": "Contact",
     "contact": "If you have questions, contact us at support@agrisahayak.example"
   },
