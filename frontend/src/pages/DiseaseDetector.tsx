@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, Upload, AlertCircle, Info, Loader } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { saveDiagnostic } from '../services/db';
 import { detectPlantDisease } from '../services/api';
 import type { DiseaseInfo } from '../utils/diseaseMapping';
@@ -232,56 +233,59 @@ const DiseaseDetector: React.FC = () => {
     }
   };
 
-  const escapeHtml = (value: string): string =>
-    value.replace(/[&<>"']/g, (character) => (
-      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character] || character
-    ));
-
   const handleShareResults = () => {
     if (!detectionResult) return;
-
-    const reportWindow = window.open('', '_blank');
-    if (!reportWindow) {
-      setError('Please allow pop-ups to save the PDF report.');
-      return;
-    }
 
     const localizedPredictions = detectionResult.predictions.map((prediction) => ({
       ...prediction,
       disease: getLocalizedDisease(prediction.disease, i18n.language),
     }));
-    const reportTitle = escapeHtml(t('disease.title'));
-    const crop = detectionResult.crop
-      ? `<p><strong>${escapeHtml(t('disease.crop') || 'Crop')}:</strong> ${escapeHtml(detectionResult.crop.name)} (${detectionResult.crop.confidence}%)</p>`
-      : '';
-    const predictions = localizedPredictions.length > 0
-      ? localizedPredictions.map((prediction, index) => `
-          <section>
-            <h2>${index + 1}. ${escapeHtml(prediction.disease.name)}</h2>
-            <p><strong>${escapeHtml(t('disease.confidence') || 'Confidence')}:</strong> ${prediction.confidence}%</p>
-            <p>${escapeHtml(prediction.disease.description)}</p>
-            <p><strong>${escapeHtml(t('disease.treatment') || 'Treatment')}:</strong> ${prediction.disease.treatment.map(escapeHtml).join('; ')}</p>
-            <p><strong>${escapeHtml(t('disease.prevention') || 'Prevention')}:</strong> ${prediction.disease.prevention.map(escapeHtml).join('; ')}</p>
-          </section>
-        `).join('')
-      : `<p>${escapeHtml(t('disease.noDisease') || 'No disease was identified in this image.')}</p>`;
 
-    reportWindow.document.write(`<!doctype html><html><head><title>${reportTitle}</title>
-      <style>
-        body { font-family: Arial, sans-serif; color: #173b2b; max-width: 760px; margin: 32px auto; line-height: 1.5; }
-        h1 { color: #168442; border-bottom: 2px solid #168442; padding-bottom: 8px; }
-        h2 { color: #245c43; margin-bottom: 4px; }
-        section { border-top: 1px solid #d5e5da; padding: 14px 0; }
-        .meta { background: #f0faf3; padding: 12px; border-radius: 6px; }
-        @media print { body { margin: 16px; } }
-      </style></head><body>
-      <h1>${reportTitle}</h1>
-      <div class="meta">${crop}<p><strong>${escapeHtml(t('disease.generated') || 'Generated')}:</strong> ${new Date().toLocaleString()}</p></div>
-      ${predictions}
-      <p><em>${escapeHtml(t('disease.disclaimer') || 'This report is an AI-assisted result. Consult an agricultural expert for critical decisions.')}</em></p>
-      <script>window.onload = () => window.print();</script>
-      </body></html>`);
-    reportWindow.document.close();
+    try {
+      const report = new jsPDF();
+      const pageWidth = report.internal.pageSize.getWidth();
+      const pageHeight = report.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      const addText = (text: string, fontSize = 11, spacing = 7) => {
+        report.setFontSize(fontSize);
+        const lines = report.splitTextToSize(text, contentWidth);
+        if (y + lines.length * spacing > pageHeight - margin) {
+          report.addPage();
+          y = margin;
+        }
+        report.text(lines, margin, y);
+        y += lines.length * spacing + 3;
+      };
+
+      report.setTextColor(22, 132, 66);
+      addText(t('disease.title'), 18, 9);
+      report.setTextColor(23, 59, 43);
+      addText(`${t('disease.generated') || 'Generated'}: ${new Date().toLocaleString()}`);
+      if (detectionResult.crop) {
+        addText(`${t('disease.crop') || 'Crop'}: ${detectionResult.crop.name} (${detectionResult.crop.confidence}%)`);
+      }
+
+      if (localizedPredictions.length > 0) {
+        localizedPredictions.forEach((prediction, index) => {
+          addText(`${index + 1}. ${prediction.disease.name}`, 14, 8);
+          addText(`${t('disease.confidence') || 'Confidence'}: ${prediction.confidence}%`);
+          addText(prediction.disease.description);
+          addText(`${t('disease.treatment') || 'Treatment'}: ${prediction.disease.treatment.join('; ')}`);
+          addText(`${t('disease.prevention') || 'Prevention'}: ${prediction.disease.prevention.join('; ')}`);
+        });
+      } else {
+        addText(t('disease.noDisease') || 'No disease was identified in this image.');
+      }
+
+      addText(t('disease.disclaimer') || 'This report is an AI-assisted result. Consult an agricultural expert for critical decisions.');
+      report.save('agrisahayak-disease-report.pdf');
+    } catch (reportError) {
+      console.error('Failed to create disease report PDF:', reportError);
+      setError('Unable to create the PDF report. Please try again.');
+    }
   };
 
   /**
