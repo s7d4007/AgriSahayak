@@ -374,7 +374,7 @@ const SettingsPage: React.FC = () => {
               <a href="/terms" className="block text-primary-600 font-medium hover:text-primary-700">
                 → {t('settings.termsOfService')}
               </a>
-              <a href="mailto:support@agrisahayak.com" className="block text-primary-600 font-medium hover:text-primary-700">
+              <a href="mailto:duttasouvik7744@outlook.com" className="block text-primary-600 font-medium hover:text-primary-700">
                 → Contact Support
               </a>
             </div>
